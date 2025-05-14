@@ -1,5 +1,8 @@
 from fastapi import FastAPI
-from hw_agent.schemas import StatusResponse, PingResponse, RGBResponse, ResetResponse, DoseRequest, DoseResponse
+from hw_agent.schemas import (
+    MessageResponse, PingResponse, RGBResponse, 
+    ResetResponse, DoseRequest, DoseResponse, StatusResponse
+)
 
 app = FastAPI(
     title="Color Mixer HW Agent",
@@ -7,7 +10,7 @@ app = FastAPI(
     description="HW Agent 提供感測器讀值與泵浦控制"
 )
 
-@app.get("/", response_model=StatusResponse)
+@app.get("/", response_model=MessageResponse)
 async def root():
     return {"message": "Hello, FastAPI in hw_agent!"}
 

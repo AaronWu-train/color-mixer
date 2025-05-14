@@ -4,7 +4,7 @@ from typing import Literal, List, Dict
 from uuid import UUID
 
 # GET /
-class StatusResponse(BaseModel):
+class MessageResponse(BaseModel):
     message: str = Field(..., description="message")
 
 # GET /ping

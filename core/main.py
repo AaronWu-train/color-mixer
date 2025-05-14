@@ -1,6 +1,6 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
 from core.schemas import (
-    StatusResponse, PingResponse, 
+    MessageResponse, PingResponse, 
     MixRequest, MixResponse, ResetResponse,
     WSColorResponse, WSMixStarted, WSMixProgress, WSMixFinished, WSMixError
 )
@@ -14,7 +14,7 @@ app = FastAPI(
     validate_response=True  # 啟用回應驗證，若效率不佳可關閉
 )
 
-@app.get("/", response_model=StatusResponse)
+@app.get("/", response_model=MessageResponse)
 async def root():
     return {"message": "Hello, FastAPI in core!"}
 

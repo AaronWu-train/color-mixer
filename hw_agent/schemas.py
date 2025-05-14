@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from typing import List, Dict
 
 # GET /
-class StatusResponse(BaseModel):
+class MessageResponse(BaseModel):
     message: str = Field(..., description="message")
 
 # GET /ping
