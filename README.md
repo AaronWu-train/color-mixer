@@ -83,7 +83,7 @@ poetry --version
 
 ```bash
 poetry env use $(pyenv which python)   # tell Poetry to use 3.12
-poetry install                         # creates .venv + installs packages
+poetry install --no-root               # creates .venv + installs packages
 ```
 
 ### 6  Run the app
