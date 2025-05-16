@@ -19,6 +19,7 @@ if "locked" not in st.session_state:
 if "color_index" not in st.session_state:
     st.session_state.color_index = 0
 
+## Below is just for testing purposes. In the final version, this should be removed, and the color which the color sensor detects should be used.
 if not st.session_state.locked:
     time.sleep(0.1)
     st.session_state.color_index = (st.session_state.color_index + 1) % len(colors)
@@ -53,7 +54,8 @@ with btn_col2:
     if st.button("Start Grading", use_container_width=True):
         st.session_state.locked = False
 
-try:
-    st.rerun()
-except AttributeError:
-    st.experimental_rerun()
+
+##try:
+  ##  st.rerun()
+##except AttributeError:
+  ##  st.experimental_rerun()
