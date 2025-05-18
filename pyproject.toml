@@ -1,5 +1,5 @@
 [project]
-requires-python = ">=3.12,<4.0"
+requires-python = ">=3.12,<3.13"
 name = "color-mixer"
 version = "0.1.0"
 description = ""
@@ -12,8 +12,8 @@ dependencies = [
     "black (>=25.1.0,<26.0.0)",
     "streamlit (>=1.45.1,<2.0.0)",
     "requests (>=2.32.3,<3.0.0)",
-    "pydantic2md (>=0.1.0,<0.2.0)",
     "pre-commit (>=4.2.0,<5.0.0)",
+    "fastapi-code-generator (>=0.5.4,<0.6.0)",
 ]
 
 
