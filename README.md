@@ -87,6 +87,12 @@ poetry env use $(pyenv which python)   # tell Poetry to use 3.12
 poetry install --no-root               # creates .venv + installs packages
 ```
 
+### 6. Set Up pre-commit git hook
+
+```bash
+pre-commit install
+```
+
 ---
 
 ## 🛠 Common Tasks
