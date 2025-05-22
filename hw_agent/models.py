@@ -1,5 +1,5 @@
-
 """Pydantic schemas for the Color Mixer hardware‑agent API."""
+
 from __future__ import annotations
 
 from enum import Enum
@@ -14,10 +14,10 @@ from pydantic import BaseModel, Field, RootModel, conint, conlist
 class State(str, Enum):
     """Operational state of the hardware agent."""
 
-    accepted = "accepted"   # 已接收請求，待處理
-    idle = "idle"           # 閒置
-    running = "running"     # 執行中
-    error = "error"         # 發生錯誤
+    accepted = "accepted"  # 已接收請求，待處理
+    idle = "idle"  # 閒置
+    running = "running"  # 執行中
+    error = "error"  # 發生錯誤
 
 
 # --------------------------------------------------------------------------- #
@@ -28,7 +28,7 @@ class RGBColorArray(
         conlist(
             conint(ge=0, le=255),  # 每個元素 0–255
             min_length=3,
-            max_length=3,          # 僅接受正好 3 筆 (R, G, B)
+            max_length=3,  # 僅接受正好 3 筆 (R, G, B)
         )
     ]
 ):
@@ -40,6 +40,7 @@ class RGBColorArray(
 # --------------------------------------------------------------------------- #
 class PaintItem(BaseModel):
     """A single paint record in the palette."""
+
     id: int = Field(..., description="ID of the color, starting from 0.")
     name: str = Field(..., examples=["magenta"])
     rgb: RGBColorArray = Field(..., description="RGB color (0 – 255)")
@@ -50,12 +51,14 @@ class PaintItem(BaseModel):
 # --------------------------------------------------------------------------- #
 class MessageResponse(BaseModel):
     """Standard OK/NG envelope without additional payload."""
+
     ok: bool = Field(..., description="Indicates whether the call succeeded.")
     message: str = Field(..., description="Human‑readable message.")
 
 
 class StatusResponse(BaseModel):
     """Current runtime status of the hardware agent."""
+
     state: State
     message: Optional[str] = Field(None, description="Detail message.")
 
@@ -66,6 +69,7 @@ class PaletteResponse(RootModel[List[PaintItem]]):
 
 class DoseItem(BaseModel):
     """A single color‑volume pair for mixing."""
+
     id: int = Field(..., description="ID of the color, starting from 0.")
     name: str = Field(..., examples=["magenta"])
     volume: float = Field(..., description="Amount of color to inject (mL).")
@@ -85,4 +89,5 @@ class DoseRequest(
 
 class ErrorResponse(BaseModel):
     """Generic error wrapper."""
+
     error: str = Field(..., description="Error message.")

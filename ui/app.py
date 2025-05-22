@@ -1,17 +1,24 @@
-import streamlit as st;
-import time;
+import streamlit as st
+import time
 import numpy as np
 
 st.title("Color-Mixer UI")
 
-colors = ["rgb(255, 0, 0)", "rgb(0, 255, 0)", "rgb(0, 0, 255)", "rgb(255, 255, 0)", "rgb(255, 0, 255)", "rgb(0, 255, 255)"]
+colors = [
+    "rgb(255, 0, 0)",
+    "rgb(0, 255, 0)",
+    "rgb(0, 0, 255)",
+    "rgb(255, 255, 0)",
+    "rgb(255, 0, 255)",
+    "rgb(0, 255, 255)",
+]
 rgb_values = [
     [255, 0, 0],
     [0, 255, 0],
     [0, 0, 255],
     [255, 255, 0],
     [255, 0, 255],
-    [0, 255, 255]
+    [0, 255, 255],
 ]
 
 if "locked" not in st.session_state:
@@ -29,18 +36,21 @@ current_rgb = rgb_values[st.session_state.color_index]
 
 col1, col2 = st.columns(2)
 with col1:
-        st.markdown(
-            f"<div style='width:300px; height:300px; background-color:{current_color}; border:2px solid black;'></div>",
-            unsafe_allow_html=True
-        )
+    st.markdown(
+        f"<div style='width:300px; height:300px; background-color:{current_color}; border:2px solid black;'></div>",
+        unsafe_allow_html=True,
+    )
 with col2:
-    st.markdown(f"""
+    st.markdown(
+        f"""
         <div style='width:300px; height:300px; border:2px solid black; padding:20px;'>
             <h4>R: {current_rgb[0]}</h4>
             <h4>G: {current_rgb[1]}</h4>
             <h4>B: {current_rgb[2]}</h4>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
 st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
 
@@ -56,6 +66,6 @@ with btn_col2:
 
 
 ##try:
-  ##  st.rerun()
+##  st.rerun()
 ##except AttributeError:
-  ##  st.experimental_rerun()
+##  st.experimental_rerun()

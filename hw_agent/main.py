@@ -1,4 +1,5 @@
 """FastAPI entry point for the Color Mixer hardware‑agent."""
+
 from fastapi import FastAPI
 
 from .models import (
