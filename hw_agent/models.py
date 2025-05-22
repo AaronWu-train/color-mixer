@@ -79,8 +79,8 @@ class DoseRequest(
     RootModel[
         conlist(
             DoseItem,
-            min_items=1,
-            max_items=6,
+            min_length=1,
+            max_length=6,
         )
     ]
 ):
