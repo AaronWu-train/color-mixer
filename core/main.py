@@ -50,35 +50,26 @@ async def read_color() -> RGBColorArray:
 # --------------------------------------------------------------------------- #
 @app.websocket("/ws/color")
 async def ws_color(ws: WebSocket):
-    """Stream RGB sensor data; message format identical to GET /color."""
     await ws.accept()
     try:
         while True:
-            # TODO: 讀取即時 RGB 值
-            payload = [0, 255, 255]  # same schema as RGBColorArray
+            payload = [0, 255, 255]
             await ws.send_json(payload)
-            await asyncio.sleep(1)  # 調整頻率或改成 event‑driven
+            await asyncio.sleep(1)
     except WebSocketDisconnect:
-        # Client disconnected; silently end the stream
         pass
-    finally:
-        await ws.close()
 
 
 @app.websocket("/ws/status")
 async def ws_status(ws: WebSocket):
-    """Stream mixer core status objects; message format identical to GET /status."""
     await ws.accept()
     try:
         while True:
-            # TODO: 取得即時狀態
             payload = {"state": State.idle, "message": "Core is idle."}
-            await ws.send_json(payload)  # same schema as StatusResponse
-            await asyncio.sleep(1)  # 調整頻率或改成 event‑driven
+            await ws.send_json(payload)
+            await asyncio.sleep(1)
     except WebSocketDisconnect:
         pass
-    finally:
-        await ws.close()
 
 
 # --------------------------------------------------------------------------- #
