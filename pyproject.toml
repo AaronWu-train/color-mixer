@@ -24,6 +24,3 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 packages = [{ include = "core" }, { include = "hw_agent" }, { include = "ui" }]
-
-[tool.poetry.package]
-include = ["hw_agent/data/*.json"]
