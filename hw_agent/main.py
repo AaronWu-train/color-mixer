@@ -34,6 +34,7 @@ async def ping() -> MessageResponse:
 @app.get("/status", response_model=StatusResponse, tags=["health"])
 async def status() -> StatusResponse:
     """Current runtime state of the agent."""
+    # TODO: 讀取當前狀態
     return {"state": State.idle, "message": "Agent is idle."}
 
 
