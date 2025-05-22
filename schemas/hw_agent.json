@@ -1,0 +1,318 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Color Mixer HW Agent",
+    "description": "Expose sensor readings and pump controls for the color‑mixer hardware.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["health"],
+        "summary": "Ping",
+        "description": "Simple health probe.",
+        "operationId": "ping__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "tags": ["health"],
+        "summary": "Status",
+        "description": "Current runtime state of the agent.",
+        "operationId": "status_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/color": {
+      "get": {
+        "tags": ["sensor"],
+        "summary": "Read Color",
+        "description": "Read RGB value from the color sensor (scaled 0 – 255).",
+        "operationId": "read_color_color_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RGBColorArray"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/palette": {
+      "get": {
+        "tags": ["palette"],
+        "summary": "Get Palette",
+        "description": "Return the predefined palette used by the mixer.",
+        "operationId": "get_palette_palette_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaletteResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dose": {
+      "post": {
+        "tags": ["pump"],
+        "summary": "Dose",
+        "description": "Enqueue a mix request to the pump controller.",
+        "operationId": "dose_dose_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DoseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stop": {
+      "post": {
+        "tags": ["pump"],
+        "summary": "Stop",
+        "description": "Immediately stop all pumps and reset the agent.",
+        "operationId": "stop_stop_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DoseItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "ID of the color, starting from 0."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "examples": ["magenta"]
+          },
+          "volume": {
+            "type": "number",
+            "title": "Volume",
+            "description": "Amount of color to inject (mL)."
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "volume"],
+        "title": "DoseItem",
+        "description": "A single color‑volume pair for mixing."
+      },
+      "DoseRequest": {
+        "items": {
+          "$ref": "#/components/schemas/DoseItem"
+        },
+        "type": "array",
+        "maxItems": 6,
+        "minItems": 1,
+        "title": "DoseRequest",
+        "description": "List of colors to be mixed in one operation."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MessageResponse": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok",
+            "description": "Indicates whether the call succeeded."
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "Human‑readable message."
+          }
+        },
+        "type": "object",
+        "required": ["ok", "message"],
+        "title": "MessageResponse",
+        "description": "Standard OK/NG envelope without additional payload."
+      },
+      "PaintItem": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "ID of the color, starting from 0."
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "examples": ["magenta"]
+          },
+          "rgb": {
+            "$ref": "#/components/schemas/RGBColorArray",
+            "description": "RGB color (0 – 255)"
+          }
+        },
+        "type": "object",
+        "required": ["id", "name", "rgb"],
+        "title": "PaintItem",
+        "description": "A single paint record in the palette."
+      },
+      "PaletteResponse": {
+        "items": {
+          "$ref": "#/components/schemas/PaintItem"
+        },
+        "type": "array",
+        "title": "PaletteResponse",
+        "description": "Complete palette currently available on the agent."
+      },
+      "RGBColorArray": {
+        "items": {
+          "type": "integer",
+          "maximum": 255,
+          "minimum": 0
+        },
+        "type": "array",
+        "maxItems": 3,
+        "minItems": 3,
+        "title": "RGBColorArray",
+        "description": "RGB color after scaling (0 – 255)."
+      },
+      "State": {
+        "type": "string",
+        "enum": ["accepted", "idle", "running", "error"],
+        "title": "State",
+        "description": "Operational state of the hardware agent."
+      },
+      "StatusResponse": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/State"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Detail message."
+          }
+        },
+        "type": "object",
+        "required": ["state"],
+        "title": "StatusResponse",
+        "description": "Current runtime status of the hardware agent."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
