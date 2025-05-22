@@ -1,53 +1,98 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
-from core.schemas import (
-    MessageResponse, PingResponse, 
-    MixRequest, MixResponse, ResetResponse,
-    WSColorResponse, WSMixStarted, WSMixProgress, WSMixFinished, WSMixError
+"""FastAPI entry point for the Color Mixer core service."""
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+
+from .models import (
+    RGBColorArray,
+    MixRequest,
+    MessageResponse,
+    StatusResponse,
+    State,
 )
+
 import asyncio
-from uuid import uuid4
 
 app = FastAPI(
     title="Color Mixer Core API",
     version="0.1.0",
     description="Core API 提供混色演算法與 WebSocket 進度推播",
-    validate_response=True  # 啟用回應驗證，若效率不佳可關閉
+    validate_response=True,  # 若效率不佳可關閉
 )
 
-@app.get("/", response_model=MessageResponse)
-async def root():
-    return {"message": "Hello, FastAPI in core!"}
 
-@app.get("/ping", response_model=PingResponse)
-async def ping():
-    return {"ok": True}
+# --------------------------------------------------------------------------- #
+# Health & status
+# --------------------------------------------------------------------------- #
+@app.get("/", response_model=MessageResponse, tags=["health"])
+async def ping() -> MessageResponse:
+    """Simple health probe."""
+    return {"ok": True, "message": "Core API is reachable."}
 
-@app.post("/mix", response_model=MixResponse)
-async def mix(req: MixRequest):
-    session = uuid4()
-    # TODO: 啟動後端混色流程（非同步傳給 hw_agent）
-    return {"session": session}
 
-@app.post("/reset", response_model=ResetResponse)
-async def reset():
-    # TODO: 呼叫 hw_agent.reset()
-    return {"ok": True}
+@app.get("/status", response_model=StatusResponse, tags=["health"])
+async def status() -> StatusResponse:
+    """Current runtime state of the mixer core."""
+    return {"state": State.idle, "message": "Core is idle."}
 
+
+# --------------------------------------------------------------------------- #
+# Read‑only endpoints
+# --------------------------------------------------------------------------- #
+@app.get("/color", response_model=RGBColorArray, tags=["sensor"])
+async def read_color() -> RGBColorArray:
+    """Read RGB value from the color sensor (scaled 0 – 255)."""
+    # TODO: 讀取換算過的 RGB 數值
+    return [0, 255, 255]
+
+
+# --------------------------------------------------------------------------- #
+# WebSocket endpoints
+# --------------------------------------------------------------------------- #
 @app.websocket("/ws/color")
 async def ws_color(ws: WebSocket):
+    """Stream RGB sensor data; message format identical to GET /color."""
     await ws.accept()
-    while True:
-        # TODO: call hw_agent.get_color() → raw → scale 0–255
-        push = WSColorResponse(rgb=[128, 64, 32])
-        await ws.send_json(push.dict())
-        await asyncio.sleep(0.5)
+    try:
+        while True:
+            # TODO: 讀取即時 RGB 值
+            payload = [0, 255, 255]  # same schema as RGBColorArray
+            await ws.send_json(payload)
+            await asyncio.sleep(1)  # 調整頻率或改成 event‑driven
+    except WebSocketDisconnect:
+        # Client disconnected; silently end the stream
+        pass
+    finally:
+        await ws.close()
 
-@app.websocket("/ws/mix/{session}")
-async def ws_mix(ws: WebSocket, session: str):
+
+@app.websocket("/ws/status")
+async def ws_status(ws: WebSocket):
+    """Stream mixer core status objects; message format identical to GET /status."""
     await ws.accept()
-    # 範例流程
-    await ws.send_json(WSMixStarted(recipe={"r":10.0,"g":5.0,"b":2.0}).dict())
-    for pct in range(0, 101, 20):
-        await ws.send_json(WSMixProgress(pct=pct).dict())
-        await asyncio.sleep(0.2)
-    await ws.send_json(WSMixFinished(deltaE=1.23, final_rgb=[128,128,128]).dict())
+    try:
+        while True:
+            # TODO: 取得即時狀態
+            payload = {"state": State.idle, "message": "Core is idle."}
+            await ws.send_json(payload)  # same schema as StatusResponse
+            await asyncio.sleep(1)  # 調整頻率或改成 event‑driven
+    except WebSocketDisconnect:
+        pass
+    finally:
+        await ws.close()
+
+
+# --------------------------------------------------------------------------- #
+# Mutating endpoints
+# --------------------------------------------------------------------------- #
+@app.post("/mix", response_model=StatusResponse, status_code=202, tags=["mix"])
+async def mix(req: MixRequest) -> StatusResponse:
+    """Start a color mixing session."""
+    # TODO: 呼叫演算法
+    return {"state": State.accepted, "message": "Mix request accepted."}
+
+
+@app.post("/reset", response_model=MessageResponse, tags=["mix"])
+async def reset() -> MessageResponse:
+    """Stop the current mixing session and reset state."""
+    # TODO: 呼叫 hw_agent.reset()
+    return {"ok": True, "message": "Reset complete."}

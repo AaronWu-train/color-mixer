@@ -15,6 +15,7 @@ app = FastAPI(
     title="Color Mixer HW Agent",
     version="0.1.0",
     description="Expose sensor readings and pump controls for the color‑mixer hardware.",
+    validate_response=True,  # 啟用回應驗證，若效率不佳可關閉
 )
 
 
