@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from .models import (
+from hw_agent.models import (
     RGBColorArray,
     DoseRequest,
     MessageResponse,
@@ -10,6 +10,9 @@ from .models import (
     StatusResponse,
     State,
 )
+
+from hw_agent.services import palette as palette_service
+
 
 app = FastAPI(
     title="Color Mixer HW Agent",
@@ -47,12 +50,7 @@ async def read_color() -> RGBColorArray:
 @app.get("/palette", response_model=PaletteResponse, tags=["palette"])
 async def get_palette() -> PaletteResponse:
     """Return the predefined palette used by the mixer."""
-    # NOTE: These are placeholders until a persistence layer is provided.
-    return [
-        {"id": 0, "name": "cyan", "rgb": [0, 255, 255]},
-        {"id": 1, "name": "magenta", "rgb": [255, 0, 255]},
-        {"id": 2, "name": "yellow", "rgb": [255, 255, 0]},
-    ]
+    return palette_service.get_palette()
 
 
 # --------------------------------------------------------------------------- #
