@@ -2,13 +2,13 @@
 
 > Final Project for "Car Car Course" at NTUEE
 
-A lightweight **color-mixing toolkit** that combines a Streamlit web UI, a REST/WebSocket backend (FastAPI), raspberry PI, and a scriptable Mixbox-based algorithm.
+A lightweight **color-mixing toolkit** that combines a web UI, a REST/WebSocket backend (FastAPI), raspberry PI, and a scriptable Mixbox-based algorithm.
 
 ---
 
 ## ✨ Features
 
-- **Web UI (Streamlit)** – intuitive sliders + live color preview
+- **Web UI (Vue.js)** – intuitive sliders + live color preview
 - **FastAPI backend** – REST + WebSocket endpoints for automation or mobile apps
 - **Mixbox algorithm** – perceptually linear mixing model out of the box
 - **Sensor calibration helpers** – integrate TCS34725 sensor with Raspberry PI board.
@@ -102,7 +102,7 @@ pre-commit install
 | Drop into virtual-env     | `eval "$(poetry env activate)"`                                            |
 | Run core API server       | `poetry run uvicorn core.main:app --reload --port 8000`                    |
 | Run hw_agent API          | `poetry run uvicorn hw_agent.main:app --reload --host 0.0.0.0 --port 9000` |
-| Run Streamlit Web UI      | `streamlit run ui/app.py`                                                  |
+| Run Web UI                | View README.md in `web/` folder                                            |
 | Sync dependency           | `poetry install`                                                           |
 | Add a runtime dependency  | `poetry add mixbox`                                                        |
 | Add a dev-only dependency | `poetry add --group dev pytest`                                            |
