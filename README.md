@@ -102,7 +102,7 @@ pre-commit install
 | Drop into virtual-env     | `eval "$(poetry env activate)"`                                            |
 | Run core API server       | `poetry run uvicorn core.main:app --reload --port 8000`                    |
 | Run hw_agent API          | `poetry run uvicorn hw_agent.main:app --reload --host 0.0.0.0 --port 9000` |
-| Run Web UI                | View README.md in `web/` folder                                            |
+| Run Web UI                | `cd web` and follow instructions in `README.md` in the `web/` folder       |
 | Sync dependency           | `poetry install`                                                           |
 | Add a runtime dependency  | `poetry add mixbox`                                                        |
 | Add a dev-only dependency | `poetry add --group dev pytest`                                            |
