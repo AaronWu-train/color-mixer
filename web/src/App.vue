@@ -43,7 +43,7 @@
             <template #header>
               <div class="card-header">
                 <span>Sensor Color</span>
-                <el-button size="default" @click="toggleSensor">
+                <el-button size="default" @click="toggleSensor" :disabled="mixingActive">
                   {{ sensorActive ? '停止' : '啟動' }}
                 </el-button>
               </div>
@@ -79,7 +79,7 @@
       <!-- 開始混色按鈕 -->
       <el-row type="flex" justify="center" align="middle" class="mix-row">
         <el-button type="primary" size="large" @click="toggleMix">
-          {{ mixingActive ? '停止' : '啟動' }}
+          {{ mixingActive ? '停止' : '開始混色' }}
         </el-button>
       </el-row>
     </el-main>
@@ -90,6 +90,7 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { Refresh, ArrowRight } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 // --- 狀態宣告 ---
 const WS_BASE = ref(import.meta.env.VITE_WS_BASE_URL)
@@ -109,6 +110,8 @@ let wsStatus = null
 const tagType = computed(() => {
   switch (statusState.value) {
     case 'idle':
+      return 'success'
+    case 'finished':
       return 'success'
     case 'running':
       return 'info'
@@ -149,11 +152,29 @@ const fetchStatus = async () => {
 const startStatusWebsocket = () => {
   wsStatus?.close()
   wsStatus = new WebSocket(`${WS_BASE.value}/ws/status`)
+  console.log('Starting status WebSocket...')
+  console.log('WebSocket URL:', `${WS_BASE.value}/ws/status`)
+
   wsStatus.onmessage = (e) => {
+    console.log('Received status:', e.data)
     const data = JSON.parse(e.data)
     statusState.value = data.state
     statusMessage.value = data.message || 'No additional message.'
-    if (data.state === 'idle') wsStatus.close()
+    if (data.state === 'finished') {
+      mixingActive.value = false
+      ElMessage({
+        message: 'Mixing finished successfully!',
+        type: 'success',
+      })
+    } else if (data.state === 'error') {
+      mixingActive.value = false
+      ElMessage({
+        message: 'Mixing error occurred!',
+        type: 'error',
+      })
+    } else if (data.state === 'idle') {
+      mixingActive.value = false
+    }
   }
   wsStatus.onclose = () => {
     mixingActive.value = false
@@ -163,9 +184,9 @@ const startStatusWebsocket = () => {
 // 建立感測器顏色 WebSocket
 const startSensorWebsocket = () => {
   wsColor?.close()
+  wsColor = new WebSocket(`${WS_BASE.value}/ws/color`)
   console.log('Starting sensor WebSocket...')
   console.log('WebSocket URL:', `${WS_BASE.value}/ws/color`)
-  wsColor = new WebSocket(`${WS_BASE.value}/ws/color`)
   wsColor.onmessage = (e) => {
     console.log('Received color:', e.data)
     sensorColor.value = rgbArrayToStr(e.data)
@@ -200,21 +221,47 @@ const toggleMix = () => {
 
 // 開始混色流程
 const startMix = async () => {
-  mixingActive.value = true
-  await axios.post('/mix', {
-    target: rgbStrToArray(targetColor.value),
-    message: null,
-  })
-  startStatusWebsocket()
-  startSensorWebsocket()
+  await axios
+    .post('/mix', {
+      target: rgbStrToArray(targetColor.value),
+      message: null,
+    })
+    .then((response) => {
+      statusState.value = response.data.state
+      statusMessage.value = response.data.message
+      ElMessage({
+        message: 'Mixing started successfully!',
+        type: 'success',
+      })
+      mixingActive.value = true
+    })
+    .catch((err) => {
+      console.error('Error starting mix:', err)
+      ElMessage({
+        message: 'Error starting mix: ' + err,
+        type: 'error',
+      })
+    })
 }
 
 // 停止混色流程
 const stopMix = async () => {
-  mixingActive.value = false
-  wsStatus?.close()
-  wsColor?.close()
-  await axios.post('/reset')
+  await axios
+    .post('/reset')
+    .then(() => {
+      ElMessage({
+        message: 'Mixing stopped.',
+        type: 'info',
+      })
+      mixingActive.value = false
+    })
+    .err((err) => {
+      console.error('Error:', err)
+      ElMessage({
+        message: 'Error: ' + err,
+        type: 'error',
+      })
+    })
 }
 
 // 切換導覽列選項
@@ -226,6 +273,7 @@ const handleMenuSelect = (index) => {
 onMounted(() => {
   // 初次載入時可啟動狀態檢查
   fetchStatus()
+  startStatusWebsocket()
 })
 </script>
 

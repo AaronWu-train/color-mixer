@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-import random
+import random, datetime
 
 from .models import (
     RGBColorArray,
@@ -90,7 +90,11 @@ async def ws_status(ws: WebSocket):
     await ws.accept()
     try:
         while True:
-            payload = {"state": State.idle, "message": "Core is idle."}
+            timestamp = datetime.datetime.now().isoformat()
+            payload = {
+                "state": State.idle,
+                "message": "Core is idle, timestamp: " + timestamp,
+            }
             await ws.send_json(payload)
             await asyncio.sleep(1)
     except WebSocketDisconnect:

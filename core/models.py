@@ -17,6 +17,7 @@ class State(str, Enum):
     accepted = "accepted"  # 已接收請求，待處理
     idle = "idle"  # 閒置
     running = "running"  # 混色中
+    finished = "finished"  # 混色完成，完成後應該持續此狀態 3 秒
     error = "error"  # 發生錯誤
 
 
