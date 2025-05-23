@@ -1,6 +1,6 @@
 <template>
   <el-container style="height: 100vh">
-    <!-- 頂部導覽列 -->
+    <!-- 頂部導覽 -->
     <el-header>
       <el-menu
         :default-active="activeMenu"
@@ -14,9 +14,9 @@
       </el-menu>
     </el-header>
 
-    <!-- 主內容區 -->
+    <!-- 主要內容 -->
     <el-main class="main-content">
-      <!-- 伺服器狀態卡片 -->
+      <!-- Server Status 卡片 -->
       <el-card class="status-card">
         <el-row class="status-header" type="flex" justify="center" align="middle">
           <el-col :span="6">
@@ -52,9 +52,9 @@
           </el-card>
         </el-col>
 
-        <!-- 套用按鈕與標籤 -->
+        <!-- 套用按鈕 -->
         <el-col :span="1" class="arrow-col">
-          <el-button circle @click="applyColor">
+          <el-button circle @click="applyColor" :disabled="mixingActive">
             <el-icon><ArrowRight /></el-icon>
           </el-button>
         </el-col>
@@ -70,14 +70,16 @@
             </template>
             <div class="color-block" :style="{ backgroundColor: targetColor }"></div>
             <div class="picker-wrapper">
-              <el-color-picker v-model="targetColor" size="default" />
+              <el-color-picker v-model="targetColor" size="default" color-format="rgb" />
             </div>
           </el-card>
         </el-col>
       </el-row>
+
+      <!-- 開始混色按鈕 -->
       <el-row type="flex" justify="center" align="middle" class="mix-row">
-        <el-button type="primary" size="large" @click="startMix" :disabled="mixingActive">
-          開始混色
+        <el-button type="primary" size="large" @click="toggleMix">
+          {{ mixingActive ? '停止' : '啟動' }}
         </el-button>
       </el-row>
     </el-main>
@@ -87,21 +89,14 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
-import { Refresh } from '@element-plus/icons-vue'
+import { Refresh, ArrowRight } from '@element-plus/icons-vue'
 
-// 導覽列目前選中項目
+// --- 狀態宣告 ---
+const WS_BASE = ref(import.meta.env.VITE_WS_BASE_URL)
 const activeMenu = ref('home')
-const handleMenuSelect = (index) => {
-  activeMenu.value = index
-}
-
-// 感測器狀態與顏色
 const sensorActive = ref(false)
-const sensorColor = ref('#ffffff')
-
-// 目標顏色
-const targetColor = ref('#ffffff')
-
+const sensorColor = ref('rgb(255, 255, 255)')
+const targetColor = ref('rgb(255, 255, 255)')
 const statusState = ref('idle')
 const statusMessage = ref('No additional message.')
 const mixingActive = ref(false)
@@ -110,79 +105,7 @@ const mixingActive = ref(false)
 let wsColor = null
 let wsStatus = null
 
-// 啟動或停止感測器
-const toggleSensor = () => {
-  if (sensorActive.value) {
-    wsColor?.close()
-    sensorActive.value = false
-  } else {
-    sensorActive.value = true
-    startSensorWebsocket()
-  }
-}
-
-// 建立 WebSocket 連線以接收感測器顏色
-const startSensorWebsocket = () => {
-  wsColor?.close()
-  wsColor = new WebSocket(`ws://${window.location.host}/ws/color`)
-  wsColor.onmessage = (event) => {
-    sensorColor.value = event.data
-  }
-  wsColor.onclose = () => {
-    sensorActive.value = false
-  }
-}
-
-const hexToRgbArray = (hex) => {
-  const pairs = hex.replace('#', '').match(/.{2}/g) || []
-  return pairs.map((p) => parseInt(p, 16))
-}
-
-const startStatusWebsocket = () => {
-  wsStatus?.close()
-  wsStatus = new WebSocket(`ws://${window.location.host}/ws/status`)
-  wsStatus.onmessage = (event) => {
-    const data = JSON.parse(event.data)
-    statusState.value = data.state
-    statusMessage.value = data.message || 'No additional message.'
-    if (data.state === 'idle') {
-      wsStatus.close()
-    }
-  }
-  wsStatus.onclose = () => {
-    mixingActive.value = false
-  }
-}
-
-// 套用感測器顏色到目標
-const applyColor = () => {
-  targetColor.value = sensorColor.value
-}
-
-// 重設目標顏色
-const resetTarget = () => {
-  targetColor.value = '#ffffff'
-}
-
-const startMix = async () => {
-  mixingActive.value = true
-  const payload = { target: hexToRgbArray(targetColor.value), message: null }
-  await axios.post('/mix', payload)
-  startStatusWebsocket()
-}
-
-// 請求並更新伺服器狀態
-const fetchStatus = async () => {
-  try {
-    const res = await axios.get('/status')
-    statusState.value = res.data.state
-    statusMessage.value = res.data.message || 'No additional message.'
-  } catch {
-    statusState.value = 'error'
-    statusMessage.value = '錯誤'
-  }
-}
-
+// --- Computed ---
 const tagType = computed(() => {
   switch (statusState.value) {
     case 'idle':
@@ -198,9 +121,111 @@ const tagType = computed(() => {
   }
 })
 
-// 初次載入時獲取伺服器狀態
+// --- 工具函式 ---
+const rgbStrToArray = (rgbString) => {
+  const nums = rgbString.match(/\d+/g).map(Number)
+  return nums.length === 3 ? nums : [0, 0, 0]
+}
+
+const rgbArrayToStr = (rgbArrayStr) => {
+  const rgbArray = JSON.parse(rgbArrayStr)
+  return `rgb(${rgbArray[0]}, ${rgbArray[1]}, ${rgbArray[2]})`
+}
+
+// --- WebSocket & HTTP 方法 ---
+// 取得並更新伺服器狀態
+const fetchStatus = async () => {
+  try {
+    const res = await axios.get('/status')
+    statusState.value = res.data.state
+    statusMessage.value = res.data.message || 'No additional message.'
+  } catch {
+    statusState.value = 'error'
+    statusMessage.value = '錯誤'
+  }
+}
+
+// 建立狀態進度 WebSocket
+const startStatusWebsocket = () => {
+  wsStatus?.close()
+  wsStatus = new WebSocket(`${WS_BASE.value}/ws/status`)
+  wsStatus.onmessage = (e) => {
+    const data = JSON.parse(e.data)
+    statusState.value = data.state
+    statusMessage.value = data.message || 'No additional message.'
+    if (data.state === 'idle') wsStatus.close()
+  }
+  wsStatus.onclose = () => {
+    mixingActive.value = false
+  }
+}
+
+// 建立感測器顏色 WebSocket
+const startSensorWebsocket = () => {
+  wsColor?.close()
+  console.log('Starting sensor WebSocket...')
+  console.log('WebSocket URL:', `${WS_BASE.value}/ws/color`)
+  wsColor = new WebSocket(`${WS_BASE.value}/ws/color`)
+  wsColor.onmessage = (e) => {
+    console.log('Received color:', e.data)
+    sensorColor.value = rgbArrayToStr(e.data)
+  }
+  wsColor.onclose = () => {
+    sensorActive.value = false
+  }
+}
+
+// --- 動作函式 ---
+// 切換感測器
+const toggleSensor = () => {
+  sensorActive.value
+    ? wsColor?.close() && (sensorActive.value = false)
+    : ((sensorActive.value = true), startSensorWebsocket())
+}
+
+// 將感測器顏色套用到目標
+const applyColor = () => {
+  targetColor.value = sensorColor.value
+}
+
+// 重設目標顏色
+const resetTarget = () => {
+  targetColor.value = '#ffffff'
+}
+
+// 切換混色狀態
+const toggleMix = () => {
+  mixingActive.value ? stopMix() : startMix()
+}
+
+// 開始混色流程
+const startMix = async () => {
+  mixingActive.value = true
+  await axios.post('/mix', {
+    target: rgbStrToArray(targetColor.value),
+    message: null,
+  })
+  startStatusWebsocket()
+  startSensorWebsocket()
+}
+
+// 停止混色流程
+const stopMix = async () => {
+  mixingActive.value = false
+  wsStatus?.close()
+  wsColor?.close()
+  await axios.post('/reset')
+}
+
+// 切換導覽列選項
+const handleMenuSelect = (index) => {
+  activeMenu.value = index
+}
+
+// --- 生命周期 ---
 onMounted(() => {
-  // fetchStatus()
+  // 初次載入時可啟動狀態檢查
+  fetchStatus()
 })
 </script>
 
@@ -210,34 +235,29 @@ onMounted(() => {
   height: 325px;
   margin: 0 auto;
 }
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-
 .color-block {
   width: 100%;
   height: 160px;
   border-radius: 4px;
-  border: 1px solid #ebeef5;
+  border: 1px solid #a4a4a4;
   margin: 10px 0;
 }
-
 .arrow-col {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 }
-
 .picker-wrapper {
   display: flex;
   justify-content: center;
   margin-top: 10px;
 }
-
 .main-content {
   display: flex;
   flex-direction: column;
@@ -247,10 +267,8 @@ onMounted(() => {
 }
 .status-card {
   width: 600px;
-  height: max-content;
   margin: 20px auto;
   padding: 20px;
-  margin-top: 20px; /* ensure spacing below header */
 }
 .status-header {
   margin-bottom: 15px;
@@ -262,9 +280,7 @@ onMounted(() => {
   margin-right: 10px;
   font-weight: 600;
 }
-
 .mix-row {
-  margin-top: 60px;
-  margin-bottom: 20px;
+  margin: 60px 0 20px;
 }
 </style>

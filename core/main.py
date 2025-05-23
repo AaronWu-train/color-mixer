@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+import random
 
 from .models import (
     RGBColorArray,
@@ -74,7 +75,10 @@ async def ws_color(ws: WebSocket):
     await ws.accept()
     try:
         while True:
-            payload = [0, 255, 255]
+            random_r = random.randint(0, 255)
+            random_g = random.randint(0, 255)
+            random_b = random.randint(0, 255)
+            payload = [random_r, random_g, random_b]
             await ws.send_json(payload)
             await asyncio.sleep(1)
     except WebSocketDisconnect:
