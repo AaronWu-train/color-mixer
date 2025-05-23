@@ -215,7 +215,7 @@ const applyColor = () => {
 
 // 重設目標顏色
 const resetTarget = () => {
-  targetColor.value = '#ffffff'
+  targetColor.value = 'rgb(255, 255, 255)'
 }
 
 // 切換混色狀態
