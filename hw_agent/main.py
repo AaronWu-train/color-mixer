@@ -13,13 +13,31 @@ from hw_agent.models import (
 )
 
 from hw_agent.services import palette as palette_service
-
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Color Mixer HW Agent",
     version="0.1.0",
     description="Expose sensor readings and pump controls for the color‑mixer hardware.",
     validate_response=True,  # 啟用回應驗證，若效率不佳可關閉
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[],
+    allow_origin_regex=[
+        # localhost / 127.0.0.1
+        r"^https?://(?:localhost|127\.0\.0\.1)(?::\d+)?$",
+        # 10.x.x.x
+        r"^https?://10\.(?:[0-9]{1,3}\.){2}[0-9]{1,3}(?::\d+)?$",
+        # 172.16.0.0–172.31.255.255
+        r"^https?://172\.(?:1[6-9]|2[0-9]|3[0-1])\.(?:[0-9]{1,3}\.)[0-9]{1,3}(?::\d+)?$",
+        # 192.168.x.x
+        r"^https?://192\.168\.(?:[0-9]{1,3}\.)[0-9]{1,3}(?::\d+)?$",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
