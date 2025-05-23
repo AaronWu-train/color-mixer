@@ -193,6 +193,10 @@ const startSensorWebsocket = () => {
   }
   wsColor.onclose = () => {
     sensorActive.value = false
+    ElMessage({
+      message: 'Sensor WebSocket closed.',
+      type: 'info',
+    })
   }
 }
 
