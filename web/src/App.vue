@@ -16,16 +16,26 @@
 
     <!-- 主內容區 -->
     <el-main class="main-content">
+      <!-- 伺服器狀態卡片 -->
       <el-card class="status-card">
-        <div class="status-header">
-          <span class="status-title">Server Status:</span>
-          <el-tag :type="tagType">{{ statusState }}</el-tag>
-          <el-button size="default" circle @click="fetchStatus">
-            <el-icon><Refresh /></el-icon>
-          </el-button>
-        </div>
-        <el-input v-model="statusMessage" readonly placeholder="狀態訊息" style="width: 100%" />
+        <el-row class="status-header" type="flex" justify="center" align="middle">
+          <el-col :span="6">
+            <span class="status-title">Server Status:</span>
+          </el-col>
+          <el-col :span="16">
+            <el-tag :type="tagType">{{ statusState }}</el-tag>
+          </el-col>
+          <el-col :span="2">
+            <el-button size="default" circle @click="fetchStatus">
+              <el-icon><Refresh /></el-icon>
+            </el-button>
+          </el-col>
+        </el-row>
+        <el-row type="flex" justify="center" align="middle">
+          <el-input v-model="statusMessage" readonly placeholder="狀態訊息" style="width: 100%" />
+        </el-row>
       </el-card>
+
       <el-row type="flex" justify="center" align="middle" :gutter="30">
         <!-- Sensor Color 卡片 -->
         <el-col :span="6">
@@ -43,11 +53,10 @@
         </el-col>
 
         <!-- 套用按鈕與標籤 -->
-        <el-col :span="2" class="arrow-col">
-          <el-button circle @click="applyColor" :disabled="!sensorActive">
+        <el-col :span="1" class="arrow-col">
+          <el-button circle @click="applyColor">
             <el-icon><ArrowRight /></el-icon>
           </el-button>
-          <div class="apply-label">套用顏色</div>
         </el-col>
 
         <!-- Target Color 卡片 -->
@@ -198,6 +207,7 @@ onMounted(() => {
 <style scoped>
 .card {
   max-width: 300px;
+  height: 325px;
   margin: 0 auto;
 }
 
@@ -222,12 +232,6 @@ onMounted(() => {
   justify-content: center;
 }
 
-.apply-label {
-  margin-top: 8px;
-  font-size: 14px;
-  color: #606266;
-}
-
 .picker-wrapper {
   display: flex;
   justify-content: center;
@@ -242,13 +246,14 @@ onMounted(() => {
   min-height: 0;
 }
 .status-card {
-  width: 500px;
-  height: min-content;
+  width: 600px;
+  height: max-content;
   margin: 20px auto;
   padding: 20px;
   margin-top: 20px; /* ensure spacing below header */
 }
 .status-header {
+  margin-bottom: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -259,7 +264,7 @@ onMounted(() => {
 }
 
 .mix-row {
-  margin-top: auto;
+  margin-top: 60px;
   margin-bottom: 20px;
 }
 </style>
