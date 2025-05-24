@@ -1,6 +1,5 @@
 """FastAPI entry point for the Color Mixer hardware‑agent."""
 
-from RPi.GPIO import GPIO
 from fastapi import FastAPI
 
 from hw_agent.models import (
