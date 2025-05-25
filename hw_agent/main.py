@@ -2,7 +2,9 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 import random
+import asyncio
 
 from hw_agent.models import (
     RGBColorArray,
@@ -15,22 +17,45 @@ from hw_agent.models import (
 
 from hw_agent.services import palette as palette_service
 
+
+# --------------------------------------------------------------------------- #
+# Lifespan
+# --------------------------------------------------------------------------- #
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler for the FastAPI app."""
+    # -- Startup Logic -- #
+    app.state.status_state = State.idle
+    app.state.status_message = "Core is idle."
+    app.state.status_lock = asyncio.Lock()
+    app.state.current_mix_task = None  # TODO: 用於追蹤當前混色任務的 ayncio.Task
+
+    yield
+    # -- Shutdown Logic -- #
+    print("Shutting down...")
+
+
+# --------------------------------------------------------------------------- #
+# FastAPI app
+# --------------------------------------------------------------------------- #
+
 app = FastAPI(
     title="Color Mixer HW Agent",
     version="0.1.0",
     description="Expose sensor readings and pump controls for the color‑mixer hardware.",
     validate_response=True,  # 啟用回應驗證，若效率不佳可關閉
+    lifespan=lifespan,
 )
 
-PRIVATE_NET_REGEX = (
+PRIVATE_NET_REGEX = (  # Only allow private network origins
     r"^https?://"
     r"(?:"
-    r"(?:localhost|127\.0\.0\.1)"  # localhost 或 127.0.0.1
+    r"(?:localhost|127\.0\.0\.1)"  # localhost or 127.0.0.1
     r"|10\.\d{1,3}\.\d{1,3}\.\d{1,3}"  # 10.x.x.x
     r"|172\.(?:1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}"  # 172.16–31.x.x
     r"|192\.168\.\d{1,3}\.\d{1,3}"  # 192.168.x.x
     r")"
-    r"(?::\d+)?$"  # 可帶上 :port
+    r"(?::\d+)?$"  # allowing :port
 )
 
 app.add_middleware(
