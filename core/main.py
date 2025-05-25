@@ -102,9 +102,15 @@ async def status() -> StatusResponse:
 # --------------------------------------------------------------------------- #
 @app.get("/color", response_model=RGBColorArray, tags=["sensor"])
 async def read_color() -> RGBColorArray:
-    """Read RGB value from the color sensor (scaled 0 – 255)."""
-    # TODO: 讀取換算過的 RGB 數值
-    return [0, 255, 255]
+    """Read RGB value from the color sensor (scaled 0 - 255)."""
+    payload = await hw_client.get_color()
+    if payload is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Color sensor not available.",
+        )
+
+    return payload
 
 
 # --------------------------------------------------------------------------- #
@@ -115,12 +121,11 @@ async def ws_color(ws: WebSocket):
     await ws.accept()
     try:
         while True:
-            random_r = random.randint(0, 255)
-            random_g = random.randint(0, 255)
-            random_b = random.randint(0, 255)
-            payload = [random_r, random_g, random_b]
+            payload = await hw_client.get_color()
+            if payload is None:
+                continue  # Skip if sensor is currently not available
             await ws.send_json(payload)
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
     except WebSocketDisconnect:
         pass
 

@@ -1,6 +1,8 @@
 """FastAPI entry point for the Color Mixer hardware‑agent."""
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import random
 
 from hw_agent.models import (
     RGBColorArray,
@@ -12,7 +14,6 @@ from hw_agent.models import (
 )
 
 from hw_agent.services import palette as palette_service
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Color Mixer HW Agent",
@@ -64,8 +65,12 @@ async def status() -> StatusResponse:
 @app.get("/color", response_model=RGBColorArray, tags=["sensor"])
 async def read_color() -> RGBColorArray:
     """Read RGB value from the color sensor (scaled 0 – 255)."""
-    # TODO: 讀取換算過的 RGB 數值
-    return [0, 255, 255]
+    # TODO: 讀取換算過的 sRGB 數值
+    random_r = random.randint(0, 255)
+    random_g = random.randint(0, 255)
+    random_b = random.randint(0, 255)
+    payload = [random_r, random_g, random_b]
+    return payload
 
 
 @app.get("/palette", response_model=PaletteResponse, tags=["palette"])

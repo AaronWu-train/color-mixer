@@ -15,7 +15,6 @@ async def get_client() -> httpx.AsyncClient:
     if _client is None:
         _client = httpx.AsyncClient(
             base_url=settings.hw_agent_base_url,
-            timeout=settings.hw_agent_timeout,  # optional: configure in settings
         )
     return _client
 
@@ -45,7 +44,7 @@ async def get_status() -> Dict[str, Any]:
         return {"state": "error", "message": "Failed to fetch status"}
 
 
-async def get_color() -> List[int]:
+async def get_color() -> Optional[List[int]]:
     """Fetch RGB color from the hardware agent."""
     client = await get_client()
     try:
@@ -54,7 +53,7 @@ async def get_color() -> List[int]:
         return response.json()
     except httpx.HTTPStatusError as e:
         print(f"Error fetching color: {e.response.status_code} - {e.response.text}")
-        return [0, 0, 0]
+        return None
 
 
 async def get_palette() -> Dict[str, List[Dict[str, Any]]]:
@@ -82,3 +81,10 @@ async def dose_color(items: List[Dict[str, Any]]) -> Dict[str, Any]:
     except httpx.HTTPStatusError as e:
         print(f"Error dosing color: {e.response.status_code} - {e.response.text}")
         return {"state": "error", "message": "Failed to send dose request"}
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    color = asyncio.run(get_color())
+    print("get_color:", color)
