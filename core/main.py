@@ -1,8 +1,18 @@
 """FastAPI entry point for the Color Mixer core service."""
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import (
+    FastAPI,
+    WebSocket,
+    WebSocketDisconnect,
+    HTTPException,
+    status,
+    BackgroundTasks,
+)
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 import random, datetime
+import asyncio
+
 
 from .models import (
     RGBColorArray,
@@ -12,7 +22,32 @@ from .models import (
     State,
 )
 
-import asyncio
+from .services import hw_client
+
+
+# --------------------------------------------------------------------------- #
+# Lifespan
+# --------------------------------------------------------------------------- #
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler for the FastAPI app."""
+    # -- Startup Logic -- #
+    app.state.status_state = State.idle
+    app.state.status_message = "Core is idle."
+    app.state.timestamp = datetime.datetime.now().isoformat()
+    app.state.status_lock = asyncio.Lock()
+    app.state.current_mix_task = None
+    app.state.hw_client = None
+
+    yield
+    # -- Shutdown Logic -- #
+    print("Shutting down...")
+    hw_client.close_client()  # Close the shared HTTP client
+
+
+# --------------------------------------------------------------------------- #
+# FastAPI app
+# --------------------------------------------------------------------------- #
 
 app = FastAPI(
     title="Color Mixer Core API",
@@ -54,7 +89,12 @@ async def ping() -> MessageResponse:
 @app.get("/status", response_model=StatusResponse, tags=["health"])
 async def status() -> StatusResponse:
     """Current runtime state of the mixer core."""
-    return {"state": State.idle, "message": "Core is idle."}
+    timestamp = datetime.datetime.now().isoformat()
+    payload = {
+        "state": State.idle,
+        "message": "Core is idle, timestamp: " + timestamp,
+    }
+    return payload
 
 
 # --------------------------------------------------------------------------- #

@@ -33,7 +33,7 @@ class RGBColorArray(
         )
     ]
 ):
-    """RGB color after scaling (0 – 255)."""
+    """sRGB color after scaling and correction (0 – 255)."""
 
 
 # --------------------------------------------------------------------------- #
@@ -44,7 +44,7 @@ class PaintItem(BaseModel):
 
     id: int = Field(..., description="ID of the color, starting from 0.")
     name: str = Field(..., examples=["magenta"])
-    rgb: RGBColorArray = Field(..., description="RGB color (0 – 255)")
+    rgb: RGBColorArray = Field(..., description="sRGB color (0 – 255)")
 
 
 # --------------------------------------------------------------------------- #
