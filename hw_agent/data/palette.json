@@ -1,5 +1,5 @@
 [
-  { "id": 1, "name": "magenta", "rgb": [255, 0, 255] },
-  { "id": 2, "name": "cyan", "rgb": [0, 255, 255] },
-  { "id": 3, "name": "yellow", "rgb": [255, 255, 0] }
+  { "id": 1, "name": "magenta", "rgb": [202, 20, 123] },
+  { "id": 2, "name": "cerulean blue", "rgb": [0, 134, 210] },
+  { "id": 3, "name": "yellow", "rgb": [255, 212, 0] }
 ]

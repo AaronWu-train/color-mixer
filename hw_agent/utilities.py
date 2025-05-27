@@ -1,12 +1,7 @@
 import numpy as np
 
-def raw_to_rgb(r_raw, g_raw, b_raw, c_raw):
-    r = float(r_raw) / c_raw
-    g = float(g_raw) / c_raw
-    b = float(b_raw) / c_raw
-    
-    cal_sensor = np.array("magenta")
-    cal_ref_lin = np.array([1, 0, 0])
-    A = cal_sensor.T
-    B = cal_ref_lin.T
-    M = (B@np.linalg.pinv(A)).T
+def sensor_to_mixbox(R_raw, G_raw, B_raw, C, M):
+    r, g, b = R_raw/C, G_raw/C, B_raw/C
+    r_lin, g_lin, b_lin = (M.T@np.array([r, g, b]).clip(0, 1))
+    to8 = lambda x: int(round((x**1/2.2)*255))
+    return to8(r_lin), to8(g_lin), to8(b_lin)
