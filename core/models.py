@@ -45,7 +45,7 @@ class MessageResponse(BaseModel):
 
     ok: bool = Field(..., description="Indicates whether the call succeeded.")
     message: str = Field(..., description="Human‑readable message.")
-    timestamp: str = Field(
+    timestamp: Optional[str] = Field(
         ..., description="Timestamp of the response in ISO 8601 format."
     )
 

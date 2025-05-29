@@ -173,5 +173,18 @@ async def mix(req: MixRequest) -> StatusResponse:
 @app.post("/reset", response_model=MessageResponse, tags=["mix"])
 async def reset() -> MessageResponse:
     """Stop the current mixing session and reset state."""
-    # TODO: 呼叫 hw_agent.reset()
+
+    if not app.state.current_mix_task or app.state.current_mix_task.done():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No mixing session is currently in progress.",
+        )
+
+    # Cancel the current mixing task
+    app.state.current_mix_task.cancel()
+    try:
+        await app.state.current_mix_task
+    except asyncio.CancelledError:
+        pass
+
     return {"ok": True, "message": "Reset complete."}

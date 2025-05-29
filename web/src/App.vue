@@ -80,10 +80,9 @@
       </el-row>
 
       <!-- 開始混色按鈕 -->
-      <el-row type="flex" justify="center" align="middle" class="mix-row">
-        <el-button type="primary" size="large" @click="toggleMix">
-          {{ mixingActive ? '停止' : '開始混色' }}
-        </el-button>
+      <el-row type="flex" justify="center" align="middle" class="mix-row" :gutter="20">
+        <el-button type="primary" size="large" @click="startMix"> 開始混色 </el-button>
+        <el-button type="warning" size="large" @click="stopMix"> 停止混色 </el-button>
       </el-row>
     </el-main>
   </el-container>
@@ -168,16 +167,17 @@ const startStatusWebsocket = () => {
   wsStatus.onmessage = (e) => {
     console.log('Received status:', e.data)
     const data = JSON.parse(e.data)
+    const previousState = statusState.value
     statusState.value = data.state
     statusMessage.value = data.message || 'No additional message.'
     statusTimestamp.value = data.timestamp || 'No timestamp provided.'
-    if (data.state === 'finished') {
+    if (data.state === 'finished' && previousState !== 'finished') {
       mixingActive.value = false
       ElMessage({
         message: 'Mixing finished successfully!',
         type: 'success',
       })
-    } else if (data.state === 'error') {
+    } else if (data.state === 'error' && previousState !== 'error') {
       mixingActive.value = false
       ElMessage({
         message: 'Mixing error occurred!',
@@ -244,6 +244,8 @@ const startMix = async () => {
     .then((response) => {
       statusState.value = response.data.state
       statusMessage.value = response.data.message
+      statusTimestamp.value = response.timestamp || 'No timestamp provided.'
+
       ElMessage({
         message: 'Mixing started successfully!',
         type: 'success',
