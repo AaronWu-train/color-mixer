@@ -22,7 +22,7 @@ from .models import (
     State,
 )
 
-from .services import hw_client
+from .services import hw_client, mix as mix_service
 
 
 # --------------------------------------------------------------------------- #
@@ -90,8 +90,9 @@ async def status() -> StatusResponse:
     """Current runtime state of the mixer core."""
     timestamp = datetime.datetime.now().isoformat()
     payload = {
-        "state": State.idle,
-        "message": "Core is idle, timestamp: " + timestamp,
+        "state": app.state.status_state,
+        "message": f"{app.state.status_message}",
+        "timestamp": timestamp,
     }
     return payload
 
@@ -136,8 +137,9 @@ async def ws_status(ws: WebSocket):
         while True:
             timestamp = datetime.datetime.now().isoformat()
             payload = {
-                "state": State.idle,
-                "message": "Core is idle, timestamp: " + timestamp,
+                "state": app.state.status_state,
+                "message": f"{app.state.status_message}",
+                "timestamp": timestamp,
             }
             await ws.send_json(payload)
             await asyncio.sleep(1)
@@ -151,7 +153,20 @@ async def ws_status(ws: WebSocket):
 @app.post("/mix", response_model=StatusResponse, status_code=202, tags=["mix"])
 async def mix(req: MixRequest) -> StatusResponse:
     """Start a color mixing session."""
-    # TODO: 呼叫演算法
+    if app.state.current_mix_task and not app.state.current_mix_task.done():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A mixing session is already in progress.",
+        )
+
+    async with app.state.status_lock:
+        app.state.status_state = State.accepted
+        app.state.status_message = "Mix request accepted."
+        app.state.timestamp = datetime.datetime.now().isoformat()
+        app.state.current_mix_task = asyncio.create_task(
+            mix_service.start_mix(app, req.target)
+        )
+
     return {"state": State.accepted, "message": "Mix request accepted."}
 
 

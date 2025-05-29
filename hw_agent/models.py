@@ -62,6 +62,9 @@ class StatusResponse(BaseModel):
 
     state: State
     message: Optional[str] = Field(None, description="Detail message.")
+    timestamp: Optional[str] = Field(
+        ..., description="Timestamp of the response in ISO 8601 format."
+    )
 
 
 class PaletteResponse(RootModel[List[PaintItem]]):

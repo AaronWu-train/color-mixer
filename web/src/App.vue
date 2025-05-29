@@ -34,6 +34,9 @@
         <el-row type="flex" justify="center" align="middle">
           <el-input v-model="statusMessage" readonly placeholder="狀態訊息" style="width: 100%" />
         </el-row>
+        <el-row type="flex" justify="center" align="middle" style="margin-top: 5px">
+          <el-text class="mx-1" size="small" type="info">Timestamp: {{ statusTimestamp }}</el-text>
+        </el-row>
       </el-card>
 
       <el-row type="flex" justify="center" align="middle" :gutter="30">
@@ -100,6 +103,7 @@ const sensorColor = ref('rgb(255, 255, 255)')
 const targetColor = ref('rgb(255, 255, 255)')
 const statusState = ref('idle')
 const statusMessage = ref('No additional message.')
+const statusTimestamp = ref('')
 const mixingActive = ref(false)
 
 // WebSocket 實例
@@ -119,6 +123,8 @@ const tagType = computed(() => {
       return 'warning'
     case 'error':
       return 'danger'
+    case 'cancelling':
+      return 'warning'
     default:
       return 'info'
   }
@@ -142,9 +148,13 @@ const fetchStatus = async () => {
     const res = await axios.get('/status')
     statusState.value = res.data.state
     statusMessage.value = res.data.message || 'No additional message.'
-  } catch {
-    statusState.value = 'error'
-    statusMessage.value = '錯誤'
+    statusTimestamp.value = res.data.timestamp || 'No timestamp provided.'
+  } catch (err) {
+    console.error('Error fetching status:', err)
+    ElMessage({
+      message: 'Error fetching status: ' + err,
+      type: 'error',
+    })
   }
 }
 
@@ -160,6 +170,7 @@ const startStatusWebsocket = () => {
     const data = JSON.parse(e.data)
     statusState.value = data.state
     statusMessage.value = data.message || 'No additional message.'
+    statusTimestamp.value = data.timestamp || 'No timestamp provided.'
     if (data.state === 'finished') {
       mixingActive.value = false
       ElMessage({

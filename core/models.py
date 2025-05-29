@@ -19,6 +19,7 @@ class State(str, Enum):
     running = "running"  # 混色中
     finished = "finished"  # 混色完成，完成後應該持續此狀態 3 秒
     error = "error"  # 發生錯誤
+    cancelling = "cancelling"  # 混色被取消
 
 
 # --------------------------------------------------------------------------- #
@@ -44,6 +45,9 @@ class MessageResponse(BaseModel):
 
     ok: bool = Field(..., description="Indicates whether the call succeeded.")
     message: str = Field(..., description="Human‑readable message.")
+    timestamp: str = Field(
+        ..., description="Timestamp of the response in ISO 8601 format."
+    )
 
 
 class StatusResponse(BaseModel):
@@ -63,7 +67,7 @@ class MixRequest(BaseModel):
     """Request to start a color mixing session."""
 
     target: RGBColorArray = Field(
-        ..., description="Target RGB color to be mixed (scaled 0 – 255)."
+        ..., description="Target RGB color to be mixed (scaled 0 - 255)."
     )
     message: Optional[str] = Field(
         None,
