@@ -2,8 +2,10 @@ import RPi.GPIO as GPIO
 import asyncio
 from time import time
 
-pump_index = [17, 27, 22, 23, 24]  # real 11  # real 13  # real 15  # real 16  # real 18
-pump_on = [False for _ in range(5)]  # Active LOW
+pump_index = [17, 22, None, 23, 24, 27]  # GPIO pins for pumps
+pump_real_pin = [11, 15, None, 16, 18, 13]  # Real GPIO pins for pumps
+
+pump_on = [False for _ in range(6)]  # Active LOW
 
 GPIO.setmode(GPIO.BCM)
 for pin in pump_index:

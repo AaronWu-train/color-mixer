@@ -9,7 +9,7 @@ sensor.enable = False
 
 
 async def getSensor():
-    r, g, b, c = sensor.color_raw
+    r, g, b = sensor.color
     color_temp = sensor.color_temperature
     lux = sensor.lux
-    return r, g, b, c, color_temp, lux
+    return r, g, b, color_temp, lux
