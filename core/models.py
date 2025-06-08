@@ -34,7 +34,7 @@ class RGBColorArray(
         )
     ]
 ):
-    """RGB color after scaling (0 – 255)."""
+    """RGB color after scaling (0 - 255)."""
 
 
 # --------------------------------------------------------------------------- #
@@ -44,7 +44,7 @@ class MessageResponse(BaseModel):
     """Standard OK/NG envelope without additional payload."""
 
     ok: bool = Field(..., description="Indicates whether the call succeeded.")
-    message: str = Field(..., description="Human‑readable message.")
+    message: str = Field(..., description="Human-readable message.")
     timestamp: Optional[str] = Field(
         ..., description="Timestamp of the response in ISO 8601 format."
     )
