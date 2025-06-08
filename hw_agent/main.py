@@ -1,10 +1,15 @@
 """FastAPI entry point for the Color Mixer hardware‑agent."""
 
-from fastapi import FastAPI
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-import random
+import random, datetime
 import asyncio
+
 
 from hw_agent.models import (
     RGBColorArray,
@@ -16,6 +21,7 @@ from hw_agent.models import (
 )
 
 from hw_agent.services import palette as palette_service
+from hw_agent.services import dose as dose_service
 
 
 # --------------------------------------------------------------------------- #
@@ -26,9 +32,9 @@ async def lifespan(app: FastAPI):
     """Lifespan event handler for the FastAPI app."""
     # -- Startup Logic -- #
     app.state.status_state = State.idle
-    app.state.status_message = "Core is idle."
+    app.state.status_message = "Hardware Agent is idle."
     app.state.status_lock = asyncio.Lock()
-    app.state.current_mix_task = None  # TODO: 用於追蹤當前混色任務的 ayncio.Task
+    app.state.current_dose_task = None  # 用於追蹤當前 Dose 任務的 ayncio.Task
 
     yield
     # -- Shutdown Logic -- #
@@ -42,7 +48,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Color Mixer HW Agent",
     version="0.1.0",
-    description="Expose sensor readings and pump controls for the color‑mixer hardware.",
+    description="Expose sensor readings and pump controls for the color-mixer hardware.",
     validate_response=True,  # 啟用回應驗證，若效率不佳可關閉
     lifespan=lifespan,
 )
@@ -80,8 +86,13 @@ async def ping() -> MessageResponse:
 @app.get("/status", response_model=StatusResponse, tags=["health"])
 async def status() -> StatusResponse:
     """Current runtime state of the agent."""
-    # TODO: 讀取當前狀態
-    return {"state": State.idle, "message": "Agent is idle."}
+    timestamp = datetime.datetime.now().isoformat()
+    payload = {
+        "state": app.state.status_state,
+        "message": f"{app.state.status_message}",
+        "timestamp": timestamp,
+    }
+    return payload
 
 
 # --------------------------------------------------------------------------- #
@@ -89,7 +100,7 @@ async def status() -> StatusResponse:
 # --------------------------------------------------------------------------- #
 @app.get("/color", response_model=RGBColorArray, tags=["sensor"])
 async def read_color() -> RGBColorArray:
-    """Read RGB value from the color sensor (scaled 0 – 255)."""
+    """Read sRGB value from the color sensor (scaled 0 - 255)."""
     # TODO: 讀取換算過的 sRGB 數值
     random_r = random.randint(0, 255)
     random_g = random.randint(0, 255)
@@ -109,8 +120,21 @@ async def get_palette() -> PaletteResponse:
 # --------------------------------------------------------------------------- #
 @app.post("/dose", response_model=StatusResponse, status_code=202, tags=["pump"])
 async def dose(req: DoseRequest) -> StatusResponse:
-    """Enqueue a mix request to the pump controller."""
-    # TODO: 啟動泵浦
+    """Start a pump dosing session."""
+    if app.state.current_dose_task and not app.state.current_dose_task.done():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A dosing session is already in progress.",
+        )
+
+    async with app.state.status_lock:
+        app.state.status_state = State.running
+        app.state.status_message = f"Starting dosing with recipe: {req}"
+        app.state.timestamp = datetime.datetime.now().isoformat()
+        app.state.current_dose_task = asyncio.create_task(
+            dose_service.start_dose(app, req.recipe)
+        )
+
     return {"state": State.accepted, "message": "Dose request received."}
 
 

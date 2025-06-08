@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
     app.state.status_state = State.idle
     app.state.status_message = "Core is idle."
     app.state.status_lock = asyncio.Lock()
-    app.state.current_mix_task = None  # TODO: 用於追蹤當前混色任務的 ayncio.Task
+    app.state.current_mix_task = None  # 用於追蹤當前混色任務的 ayncio.Task
 
     yield
     # -- Shutdown Logic -- #
