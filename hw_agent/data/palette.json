@@ -1,6 +1,6 @@
 [
+  { "id": 0, "name": "white", "rgb": [255, 255, 255] },
   { "id": 1, "name": "magenta", "rgb": [202, 20, 123] },
   { "id": 2, "name": "cerulean blue", "rgb": [0, 134, 210] },
-  { "id": 3, "name": "yellow", "rgb": [240, 220, 100] },
-  { "id": 4, "name": "white", "rgb": [255, 255, 255] }
+  { "id": 3, "name": "yellow", "rgb": [240, 220, 100] }
 ]
