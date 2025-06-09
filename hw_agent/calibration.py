@@ -35,7 +35,7 @@ def remove_clear_channel(raw_rgbc: np.ndarray) -> np.ndarray:
 
     R, G, B, C = raw_rgbc
 
-    return np.array([R / C, G / C, B / C], dtype=float)
+    return np.array([R, G, B], dtype=float)
 
 
 def calibrate_rgb(raw_rgb: Sequence[float]) -> List[float]:
@@ -45,23 +45,29 @@ def calibrate_rgb(raw_rgb: Sequence[float]) -> List[float]:
     :param raw_rgb: 原始感測器讀值 [R, G, B]
     :return: 校正後的 RGB (list of float)
     """
-    # 感測器對 4 種純色的讀值 (4×3)
+    # 感測器對多種純色的讀值 (4×3)
     V = np.array(
         [
-            [0.6583, 0.13527, 0.20643],  # magenta
-            [0.09125, 0.33225, 0.57650],  # cerulean blue
-            [0.48436, 0.37671, 0.13893],  # yellow
-            [0.31009, 0.36779, 0.32212],  # white
+            [128, 80, 111],  # magenta
+            [239, 191, 104],  # yellow
+            [73, 100, 126], # cerulean blue
+            [90, 108, 74], # green
+            [71, 71, 108], #purple
+            [139, 78, 91], # orange
+            #[255, 255, 255],  # white
         ],
         dtype=float,
     )
     # 理想值 (4×3)
     R = np.array(
         [
-            [0.7422, 0.0088, 0.2490],
-            [0.0000, 0.2640, 0.7360],
-            [0.6030, 0.3970, 0.0000],
-            [0.3333, 0.3333, 0.3333],
+            [202, 20, 123], # magenta
+            [240, 220, 100], # yellow
+            [0, 134, 210], # cerulean blue
+            [30, 195, 105], # green
+            [80, 60, 155], # purple
+            [135, 130, 20], # orange
+            #[255, 255, 255], # white
         ],
         dtype=float,
     )
@@ -75,8 +81,6 @@ def calibrate_rgb(raw_rgb: Sequence[float]) -> List[float]:
 
     # 線性轉換並回傳 list
     calibrated = raw @ M
-    # 確保校正後的值在 0-1 範圍內
-    calibrated = np.clip(calibrated, 0, 1)
 
     return calibrated.tolist()
 
@@ -100,6 +104,7 @@ def gamma_correction(linear_rgb: Union[Sequence[float], np.ndarray]) -> np.ndarr
     # sRGB Gamma 校正函式
     def _srgb_comp(c: np.ndarray) -> np.ndarray:
         a = 0.055
+        c /= 255.0
         # <= 0.0031308 部分: 線性放大；其他: 指數校正
         return np.where(c <= 0.0031308, 12.92 * c, (1 + a) * np.power(c, 1 / 2.4) - a)
 
@@ -111,6 +116,7 @@ def gamma_correction(linear_rgb: Union[Sequence[float], np.ndarray]) -> np.ndarr
 
 
 if __name__ == "__main__":
-    raw = [0.09125, 0.33225, 0.57650]
-    corrected = calibrate_rgb(raw)
-    print("校正後 RGB: ", corrected)
+    raw = [65, 90, 84]
+    rgb_lin255 = calibrate_rgb(raw)
+    rgb_srgb8 = gamma_correction(rgb_lin255)
+    print("校正後 RGB: ", rgb_srgb8)
