@@ -4,7 +4,7 @@ from ..models import RGBColorArray
 import numpy as np
 
 
-async def getColor() -> RGBColorArray:
+async def getColor():
 
     r, g, b, c = await readSensorRawRGB()
     raw = np.array([r, g, b, c], dtype=float)
@@ -14,4 +14,4 @@ async def getColor() -> RGBColorArray:
     rgb_calibrated = calibrate_rgb(clear_removed)  # 0-255
     r, g, b = rgb_calibrated
 
-    return RGBColorArray(r=r, g=g, b=b)
+    return (round(r), round(g), round(b))
