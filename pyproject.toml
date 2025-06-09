@@ -1,5 +1,5 @@
 [project]
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.11,<3.13"
 name = "color-mixer"
 version = "0.1.0"
 description = ""
@@ -27,4 +27,4 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-packages = [{ include = "core" }, { include = "hw_agent" }, { include = "ui" }]
+packages = [{ include = "core" }, { include = "hw_agent" }]
