@@ -21,6 +21,13 @@ dependencies = [
     "python-dotenv (>=1.1.0,<2.0.0)",
 ]
 
+[project.optional-dependencies]
+rpi = [
+  "Adafruit-Blinka==8.58.1",
+  "adafruit-circuitpython-busdevice==5.2.12",
+  "adafruit-circuitpython-tcs34725==3.3.24",
+  "RPi.GPIO==0.7.1"
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
