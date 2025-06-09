@@ -22,6 +22,7 @@ from hw_agent.models import (
 
 from hw_agent.services import palette as palette_service
 from hw_agent.services import dose as dose_service
+from hw_agent.services import color as color_service
 
 
 # --------------------------------------------------------------------------- #
@@ -101,11 +102,8 @@ async def status() -> StatusResponse:
 @app.get("/color", response_model=RGBColorArray, tags=["sensor"])
 async def read_color() -> RGBColorArray:
     """Read sRGB value from the color sensor (scaled 0 - 255)."""
-    # TODO: 讀取換算過的 sRGB 數值
-    random_r = random.randint(0, 255)
-    random_g = random.randint(0, 255)
-    random_b = random.randint(0, 255)
-    payload = [random_r, random_g, random_b]
+    r, g, b = await color_service.getColor()
+    payload = [r, g, b]
     return payload
 
 
