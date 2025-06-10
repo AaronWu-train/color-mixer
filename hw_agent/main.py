@@ -130,10 +130,10 @@ async def dose(req: DoseRequest) -> StatusResponse:
         app.state.status_message = f"Starting dosing with recipe: {req}"
         app.state.timestamp = datetime.datetime.now().isoformat()
         app.state.current_dose_task = asyncio.create_task(
-            dose_service.start_dose(app, req.recipe)
+            dose_service.start_dose(app, req.root)
         )
-
-    return {"state": State.accepted, "message": "Dose request received."}
+    timestamp = datetime.datetime.now().isoformat()
+    return {"state": State.accepted, "message": "Dose request received.", "timestamp": timestamp}
 
 
 @app.post("/stop", response_model=MessageResponse, tags=["pump"])

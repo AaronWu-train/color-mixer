@@ -15,6 +15,7 @@ for pin in pump_index:
 
 
 async def startPump(index, time):
+    print("Started", index, time)
     index = int(index) - 1  # Convert to zero-based index
     GPIO.output(pump_index[index], GPIO.LOW)
     pump_on[index] = True
@@ -38,3 +39,7 @@ async def haltPump(index):
 
 async def getPumpStat(index):
     return pump_on[index]
+
+
+if __name__ == "__main__":
+    asyncio.run(startPump(1, 5))

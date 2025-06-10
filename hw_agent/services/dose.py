@@ -17,16 +17,21 @@ from ..drivers import pump as pump_driver
 
 async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
     tasks = []
+    print("AAAAAAA")
     try:
         async with app.state.status_lock:
             app.state.status_state = State.running
             app.state.status_message = f"Dosing paints with recipe: {recipe}"
             app.state.timestamp = datetime.datetime.now().isoformat()
+        for item in recipe:
+            print(item)
 
+        print("RRRRR")
         tasks = [
             asyncio.create_task(pump_driver.startPump(item.id, item.volume))
             for item in recipe
         ]
+        print("BBBBBBB")
 
         await asyncio.gather(*tasks)
 
@@ -41,12 +46,16 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
             app.state.status_message = "Dosing session is cancelling"
             app.state.timestamp = datetime.datetime.now().isoformat()
 
+        for t in tasks:
+            if not t.done():
+                t.cancel()
+
+        await asyncio.gather(*tasks, return_exceptions=True)
         await pump_driver.haltPumpAll()
         print("所有 pump 任務已取消")
 
-        raise
-
     except Exception as e:
+        print(str(e))
         async with app.state.status_lock:
             app.state.status_state = "error"
             app.state.status_message = f"Error during mixing: {str(e)}"
@@ -55,11 +64,6 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
         await pump_driver.haltPumpAll()
 
     finally:
-        for t in tasks:
-            if not t.done():
-                t.cancel()
-
-        await asyncio.gather(*tasks, return_exceptions=True)
 
         await asyncio.sleep(3)  # Hold finished state for 3 seconds
 
