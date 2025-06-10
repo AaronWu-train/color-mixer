@@ -16,6 +16,7 @@ from ..drivers import pump as pump_driver
 
 
 async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
+    tasks = []
     try:
         async with app.state.status_lock:
             app.state.status_state = State.running
@@ -23,7 +24,7 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
             app.state.timestamp = datetime.datetime.now().isoformat()
 
         tasks = [
-            asyncio.create_task(pump_driver.startPump(item["id"], item["volume"]))
+            asyncio.create_task(pump_driver.startPump(item.id, item.volume))
             for item in recipe
         ]
 
