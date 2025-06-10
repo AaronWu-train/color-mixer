@@ -139,5 +139,14 @@ async def dose(req: DoseRequest) -> StatusResponse:
 @app.post("/stop", response_model=MessageResponse, tags=["pump"])
 async def stop() -> MessageResponse:
     """Immediately stop all pumps and reset the agent."""
-    # TODO: 硬體重置
+    if not app.state.current_dose_task or app.state.current_dose_task.done():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No dosing session is currently in progress.",
+        )
+
+    # Cancel the current dosing task
+    app.state.current_dose_task.cancel()
+    await app.state.current_dose_task
+
     return {"ok": True, "message": "Stopped."}

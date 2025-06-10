@@ -119,7 +119,8 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
 
     except asyncio.CancelledError:
         await _set_state(app, "cancelling", "Mixing session is cancelling")
-        # TODO: call hardware stop if needed
+
+        await hw_client.halt_pumps()
         raise
 
     except Exception as e:

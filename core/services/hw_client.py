@@ -83,6 +83,18 @@ async def dose_color(items: List[Dict[str, Any]]) -> Dict[str, Any]:
         return {"state": "error", "message": "Failed to send dose request"}
 
 
+async def halt_pumps() -> Dict[str, Any]:
+    """Halt all pumps immediately."""
+    client = await get_client()
+    try:
+        response = await client.post("/stop")
+        response.raise_for_status()
+        return response.json()
+    except httpx.HTTPStatusError as e:
+        print(f"Error halting pumps: {e.response.status_code} - {e.response.text}")
+        return {"state": "error", "message": "Failed to halt pumps"}
+
+
 if __name__ == "__main__":
     import asyncio
 

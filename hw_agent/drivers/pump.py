@@ -13,11 +13,19 @@ for pin in pump_index:
 
 
 async def startPump(index, time):
+    index = int(index) - 1  # Convert to zero-based index
     GPIO.output(pump_index[pin], GPIO.LOW)
     pump_on[index] = True
     await asyncio.sleep(time)
     GPIO.output(pump_index[pin], GPIO.HIGH)
     pump_on[index] = False
+
+
+async def haltPumpAll():
+    for pin in pump_index:
+        GPIO.output(pin, GPIO.HIGH)
+    for i in range(len(pump_on)):
+        pump_on[i] = False
 
 
 async def haltPump(index):

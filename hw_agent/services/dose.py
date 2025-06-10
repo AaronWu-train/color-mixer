@@ -12,6 +12,8 @@ from ..models import (
     State,
 )
 
+from ..drivers import pump as pump_driver
+
 
 async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
     try:
@@ -20,13 +22,12 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
             app.state.status_message = f"Dosing paints with recipe: {recipe}"
             app.state.timestamp = datetime.datetime.now().isoformat()
 
-        ###################################
-        # TODO: DO THE DOSING HERE
-        # This is where you would implement the actual dosing logic,
-        # such as calling drivers or hardware interfaces to control pumps.
-        # For now, we will simulate the mixing process with a sleep.
-        await asyncio.sleep(5)
-        ###################################
+        tasks = [
+            asyncio.create_task(pump_driver.startPump(item["id"], item["volume"]))
+            for item in recipe
+        ]
+
+        await asyncio.gather(*tasks)
 
         async with app.state.status_lock:
             app.state.status_state = "finished"
@@ -39,8 +40,8 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
             app.state.status_message = "Dosing session is cancelling"
             app.state.timestamp = datetime.datetime.now().isoformat()
 
-        # TODO: Handle cancellation gracefully
-        # TODO: Call hardware to stop mixing
+        await pump_driver.haltPumpAll()
+        print("所有 pump 任務已取消")
 
         raise
 
@@ -50,7 +51,15 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
             app.state.status_message = f"Error during mixing: {str(e)}"
             app.state.timestamp = datetime.datetime.now().isoformat()
 
+        await pump_driver.haltPumpAll()
+
     finally:
+        for t in tasks:
+            if not t.done():
+                t.cancel()
+
+        await asyncio.gather(*tasks, return_exceptions=True)
+
         await asyncio.sleep(3)  # Hold finished state for 3 seconds
 
         async with app.state.status_lock:
