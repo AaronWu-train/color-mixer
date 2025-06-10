@@ -3,7 +3,7 @@ from typing import Sequence, Union
 
 # ——— 校正參考值 ———
 BLACK_REF = np.array([0, 0, 0, 0], dtype=float)
-WHITE_REF = np.array([29956,41068,37633,41984], dtype=float)
+WHITE_REF = np.array([29956, 41068, 37633, 41984], dtype=float)
 
 # 定義一個通用的型別別名
 ArrayLikeF = Union[Sequence[float], np.ndarray]
@@ -13,12 +13,12 @@ def normalize(
     raw: ArrayLikeF, white: ArrayLikeF = WHITE_REF, black: ArrayLikeF = BLACK_REF
 ) -> np.ndarray:
     """
-    將 raw value 依校正值 remap 至 0–255，並回傳 uint8 ndarray。
+    將 raw value 依校正值 remap 至 0-1 float ndarray。
 
     :param raw:     原始通道值，一維長度與 white/black 相同
     :param white:   白板參考值
     :param black:   黑板參考值
-    :return:        uint8 ndarray，值域 [0,255]，長度與輸入相同
+    :return:        uint8 ndarray，值域 [0,1]，長度與輸入相同
     """
     arr_raw = np.asarray(raw, dtype=float)
     arr_white = np.asarray(white, dtype=float)
@@ -29,8 +29,8 @@ def normalize(
             f"raw, white, black 必須形狀一致，收到 {arr_raw.shape}, {arr_white.shape}, {arr_black.shape}"
         )
 
-    norm = (arr_raw - arr_black) / (arr_white - arr_black) * 255.0
-    return np.clip(np.round(norm), 0, 255).astype(np.uint8)
+    norm = (arr_raw - arr_black) / (arr_white - arr_black)
+    return np.clip(norm, 0, 1).astype(np.float32)
 
 
 def remove_clear_channel(rgbc: ArrayLikeF) -> np.ndarray:
