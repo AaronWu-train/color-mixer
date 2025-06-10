@@ -9,7 +9,9 @@ pump_on = [False for _ in range(6)]  # Active LOW
 
 GPIO.setmode(GPIO.BCM)
 for pin in pump_index:
-    GPIO.setup(pin, GPIO.OUT)
+    if pin is not None:
+        GPIO.setup(pin, GPIO.OUT)
+        GPIO.output(pin, GPIO.HIGH)  # Set all pumps to OFF initially
 
 
 async def startPump(index, time):
