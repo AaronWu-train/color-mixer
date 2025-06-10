@@ -3,7 +3,7 @@ from typing import Sequence, Union
 
 # ——— 校正參考值 ———
 BLACK_REF = np.array([0, 0, 0, 0], dtype=float)
-WHITE_REF = np.array([29956, 41068, 37633, 41984], dtype=float)
+WHITE_REF = np.array([5853, 7351, 6247, 20401], dtype=float)
 
 # 定義一個通用的型別別名
 ArrayLikeF = Union[Sequence[float], np.ndarray]
@@ -30,7 +30,7 @@ def normalize(
         )
 
     norm = (arr_raw - arr_black) / (arr_white - arr_black)
-    return np.clip(norm, 0, 1).astype(np.float32)
+    return np.clip(norm, 0, 10000).astype(np.float32)
 
 
 def remove_clear_channel(rgbc: ArrayLikeF) -> np.ndarray:
@@ -44,11 +44,11 @@ def remove_clear_channel(rgbc: ArrayLikeF) -> np.ndarray:
     if arr.shape != (4,):
         raise ValueError(f"rgbc 形狀應為 (4,) ，但收到 {arr.shape}")
     r, g, b, c = arr
-    r_c = r / c if c != 0 else 0
-    g_c = g / c if c != 0 else 0
-    b_c = b / c if c != 0 else 0
+    r_c = r / c * 255 / 1.5 if c != 0 else 0
+    g_c = g / c * 255 / 2 if c != 0 else 0
+    b_c = b / c * 255 / 2 if c != 0 else 0
     new_arr = np.array([r_c, g_c, b_c])
-    new_arr = np.clip(new_arr * 255, 0, 255)  # 確保值在 0–255 範圍內
+    new_arr = np.clip(new_arr, 0, 255)  # 確保值在 0–255 範圍內
     return new_arr.astype(np.uint8)  # 回傳 uint8 ndarray
 
 
@@ -63,12 +63,12 @@ def calibrate_rgb(raw_rgb: ArrayLikeF) -> np.ndarray:
     # 量測純色值 (V) 與理想純色值 (R)，各 shape=(6,3)
     V = np.array(
         [
-            [128, 80, 111],  # magenta
-            [239, 191, 104],  # yellow
-            [73, 100, 126],  # cerulean blue
-            [90, 108, 74],  # green
-            [71, 71, 108],  # purple
-            [139, 78, 91],  # orange
+            [255, 76, 141],  # magenta
+            [255, 235, 99],  # yellow
+            [54, 111, 235],  # cerulean blue
+            [114, 165, 119],  # green
+            [112, 94, 212],  # purple
+            [255, 105, 89],  # orange
         ],
         dtype=float,
     )
@@ -77,9 +77,9 @@ def calibrate_rgb(raw_rgb: ArrayLikeF) -> np.ndarray:
             [202, 20, 123],
             [240, 220, 100],
             [0, 134, 210],
-            [30, 195, 105],
-            [80, 60, 155],
-            [135, 130, 20],
+            [60, 160, 65],
+            [125, 75, 205],  # purple
+            [237, 128, 60],
         ],
         dtype=float,
     )
