@@ -12,6 +12,6 @@ async def getColor():
     normalized = normalize(raw)  # 0-255
     clear_removed = remove_clear_channel(normalized)  # 0-255
     rgb_calibrated = calibrate_rgb(clear_removed)  # 0-255
-    r, g, b = rgb_calibrated
+    r, g, b = np.clip(rgb_calibrated, 0, 255)
 
     return (round(r), round(g), round(b))
