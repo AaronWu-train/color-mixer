@@ -110,7 +110,7 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
             print(f"Batch recipe: {batch_recipe}")
 
             response = await hw_client.dose_color(batch_recipe)
-            if response.get("state") != "success":
+            if response.get("state") != "accepted":
                 await _set_state(
                     app, "error", f"Failed to dose colors: {response.get('message','')}"
                 )
