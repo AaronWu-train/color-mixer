@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
     yield
     # -- Shutdown Logic -- #
     print("Shutting down...")
-    hw_client.close_client()  # Close the shared HTTP client
+    await hw_client.close_client()  # Close the shared HTTP client
 
 
 # --------------------------------------------------------------------------- #

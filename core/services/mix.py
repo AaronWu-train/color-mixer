@@ -4,6 +4,7 @@ from fastapi import FastAPI
 import core.services.hw_client as hw_client
 import mixbox
 import numpy as np
+from scipy.optimize import nnls
 
 # 初始與最大總體積設定 (ml)
 START_VOLUME = 30
@@ -23,7 +24,7 @@ def get_ratio(palette_latent: np.ndarray, target_latent: np.ndarray) -> np.ndarr
     Returns:
         coeffs: 長度 n 的最小平方係數向量 x。
     """
-    coeffs, *_ = np.linalg.lstsq(palette_latent, target_latent, rcond=None)
+    coeffs, _ = nnls(palette_latent, target_latent)
     return coeffs
 
 
@@ -31,6 +32,7 @@ async def _set_state(app: FastAPI, state: str, message: str) -> None:
     """
     Safely update the mixing status on app.state with a timestamp.
     """
+    print(f"Setting state to {state} with message: {message}")
     async with app.state.status_lock:
         app.state.status_state = state
         app.state.status_message = message
@@ -54,7 +56,7 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
             return
 
         # 1. 生成 latent 矩陣
-        target_latent = mixbox.rgb_to_latent(target_rgb)
+        target_latent = np.array(mixbox.rgb_to_latent(target_rgb))
         palette = sorted(palette, key=lambda c: c["id"])
         palette_latent = np.column_stack(
             [mixbox.rgb_to_latent(color["rgb"]) for color in palette]
@@ -80,20 +82,24 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
             if status.get("state") != "idle":
                 await asyncio.sleep(0.1)
                 continue
+            print(f"Current total volume: {total_volume} ml")
 
             current_rgb = await hw_client.get_color()
             if current_rgb is None:
                 print("Failed to fetch current color")
                 await _set_state(app, "error", "Failed to fetch current color")
                 return
+            print(f"Current RGB: {current_rgb}")
 
-            current_latent = mixbox.rgb_to_latent(current_rgb)
+            current_latent = np.array(mixbox.rgb_to_latent(current_rgb))
             delta_latent = target_latent - current_latent
             if np.linalg.norm(delta_latent) < TOLERANCE:
+                print("Target color reached within tolerance.")
                 break
 
             coeffs_rem = get_ratio(palette_latent, delta_latent)
             props_rem = coeffs_rem / np.sum(coeffs_rem)
+            print(f"Remaining proportions: {props_rem}")
             deltas = np.round(props_rem * BATCH_VOLUME).astype(int)
 
             batch_recipe = [
@@ -117,12 +123,14 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
         await _set_state(app, "finished", "Mixing completed successfully")
 
     except asyncio.CancelledError:
+        print("Mixing session was cancelled")
         await _set_state(app, "cancelling", "Mixing session is cancelling")
 
         await hw_client.halt_pumps()
         raise
 
     except Exception as e:
+        print(f"Error during mixing: {e}")
         await _set_state(app, "error", f"Error during mixing: {e}")
 
     finally:
