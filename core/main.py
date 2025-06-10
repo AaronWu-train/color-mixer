@@ -164,7 +164,7 @@ async def mix(req: MixRequest) -> StatusResponse:
         app.state.status_message = "Mix request accepted."
         app.state.timestamp = datetime.datetime.now().isoformat()
         app.state.current_mix_task = asyncio.create_task(
-            mix_service.start_mix(app, req.target)
+            mix_service.start_mix(app, req.target.root)
         )
 
     timestamp = datetime.datetime.now().isoformat()
