@@ -6,10 +6,10 @@ import mixbox
 import numpy as np
 
 # 初始與最大總體積設定 (ml)
-START_VOLUME = 50
-MAX_VOLUME = 150
-BATCH_VOLUME = 10  # 每次迭代加料總量
-TOLERANCE = 1e-3  # 誤差容忍度
+START_VOLUME = 30
+MAX_VOLUME = 60
+BATCH_VOLUME = 5  # 每次迭代加料總量
+TOLERANCE = 1e-4  # 誤差容忍度
 
 
 def get_ratio(palette_latent: np.ndarray, target_latent: np.ndarray) -> np.ndarray:
@@ -44,6 +44,7 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
     - 初始劑量: START_VOLUME ml
     - 每輪最多加 BATCH_VOLUME ml，直到總量或達到目標。
     """
+    print(f"Starting mix to target RGB: {target_rgb}")
     try:
         await _set_state(app, "running", f"Mixing to target RGB: {target_rgb}")
 
@@ -56,7 +57,7 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
         target_latent = mixbox.rgb_to_latent(target_rgb)
         palette = sorted(palette, key=lambda c: c["id"])
         palette_latent = np.column_stack(
-            mixbox.rgb_to_latent(color["rgb"]) for color in palette
+            [mixbox.rgb_to_latent(color["rgb"]) for color in palette]
         )  # shape = (m, n)
 
         # 2. 初始配比與加料
@@ -68,14 +69,10 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
             for color, vol in zip(palette, init_volumes)
             if vol > 0
         ]
+        print(f"Initial recipe: {recipe}")
         total_volume = int(np.sum(init_volumes))
 
         response = await hw_client.dose_color(recipe)
-        if response.get("state") != "success":
-            await _set_state(
-                app, "error", f"Failed to dose colors: {response.get('message','')}"
-            )
-            return
 
         # 3. 迭代加料
         while total_volume < MAX_VOLUME:
@@ -86,14 +83,14 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
 
             current_rgb = await hw_client.get_color()
             if current_rgb is None:
+                print("Failed to fetch current color")
                 await _set_state(app, "error", "Failed to fetch current color")
                 return
 
             current_latent = mixbox.rgb_to_latent(current_rgb)
             delta_latent = target_latent - current_latent
             if np.linalg.norm(delta_latent) < TOLERANCE:
-                await _set_state(app, "finished", "Target color achieved")
-                return
+                break
 
             coeffs_rem = get_ratio(palette_latent, delta_latent)
             props_rem = coeffs_rem / np.sum(coeffs_rem)
@@ -104,6 +101,8 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
                 for color, vol in zip(palette, deltas)
                 if vol > 0
             ]
+            print(f"Batch recipe: {batch_recipe}")
+
             response = await hw_client.dose_color(batch_recipe)
             if response.get("state") != "success":
                 await _set_state(

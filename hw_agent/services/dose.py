@@ -36,6 +36,7 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
             app.state.timestamp = datetime.datetime.now().isoformat()
 
     except asyncio.CancelledError:
+        print("Dosing session was cancelled")
         async with app.state.status_lock:
             app.state.status_state = "cancelling"
             app.state.status_message = "Dosing session is cancelling"
@@ -59,7 +60,7 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
         await pump_driver.haltPumpAll()
 
     finally:
-
+        print("Dosing session finished, resetting state")
         await asyncio.sleep(3)  # Hold finished state for 3 seconds
 
         async with app.state.status_lock:
