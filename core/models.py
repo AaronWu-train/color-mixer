@@ -45,9 +45,6 @@ class MessageResponse(BaseModel):
 
     ok: bool = Field(..., description="Indicates whether the call succeeded.")
     message: str = Field(..., description="Human-readable message.")
-    timestamp: Optional[str] = Field(
-        ..., description="Timestamp of the response in ISO 8601 format."
-    )
 
 
 class StatusResponse(BaseModel):
@@ -55,6 +52,9 @@ class StatusResponse(BaseModel):
 
     state: State
     message: Optional[str] = Field(None, description="Detail message.")
+    timestamp: Optional[str] = Field(
+        ..., description="Timestamp of the response in ISO 8601 format."
+    )
 
 
 class ErrorResponse(BaseModel):

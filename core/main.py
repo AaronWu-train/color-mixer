@@ -167,7 +167,12 @@ async def mix(req: MixRequest) -> StatusResponse:
             mix_service.start_mix(app, req.target)
         )
 
-    return {"state": State.accepted, "message": "Mix request accepted."}
+    timestamp = datetime.datetime.now().isoformat()
+    return StatusResponse(
+        state=State.accepted,
+        message="Mix request accepted.",
+        timestamp=timestamp,
+    )
 
 
 @app.post("/reset", response_model=MessageResponse, tags=["mix"])

@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 from fastapi import FastAPI
-import hw_client
+import core.services.hw_client as hw_client
 import mixbox
 import numpy as np
 
