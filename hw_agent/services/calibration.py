@@ -44,8 +44,8 @@ def remove_clear_channel(rgbc: ArrayLikeF) -> np.ndarray:
     if arr.shape != (4,):
         raise ValueError(f"rgbc 形狀應為 (4,) ，但收到 {arr.shape}")
     r, g, b, c = arr
-    r_c = r / c * 255 / 1.75 if c != 0 else 0
-    g_c = g / c * 255 / 2 if c != 0 else 0
+    r_c = r / c * 255 / 1.8 if c != 0 else 0
+    g_c = g / c * 255 / 2  if c != 0 else 0
     b_c = b / c * 255 / 2 if c != 0 else 0
     new_arr = np.array([r_c, g_c, b_c])
     new_arr = np.clip(new_arr, 0, 255)  # 確保值在 0–255 範圍內
