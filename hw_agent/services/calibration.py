@@ -2,8 +2,8 @@ import numpy as np
 from typing import Sequence, Union
 
 # ——— 校正參考值 ———
-BLACK_REF = np.array([16, 16, 16, 46], dtype=float)
-WHITE_REF = np.array([19437, 27148, 20039, 41984], dtype=float)
+BLACK_REF = np.array([0, 0, 0, 0], dtype=float)
+WHITE_REF = np.array([22781, 30428, 27548, 41984], dtype=float)
 
 # 定義一個通用的型別別名
 ArrayLikeF = Union[Sequence[float], np.ndarray]
@@ -43,7 +43,13 @@ def remove_clear_channel(rgbc: ArrayLikeF) -> np.ndarray:
     arr = np.asarray(rgbc)
     if arr.shape != (4,):
         raise ValueError(f"rgbc 形狀應為 (4,) ，但收到 {arr.shape}")
-    return arr[:3]
+    r, g, b, c = arr
+    r_c = r / c if c != 0 else 0
+    g_c = g / c if c != 0 else 0
+    b_c = b / c if c != 0 else 0
+    new_arr = np.array([r_c, g_c, b_c])
+    new_arr = np.clip(new_arr * 255, 0, 255)  # 確保值在 0–255 範圍內
+    return new_arr.astype(np.uint8)  # 回傳 uint8 ndarray
 
 
 def calibrate_rgb(raw_rgb: ArrayLikeF) -> np.ndarray:
