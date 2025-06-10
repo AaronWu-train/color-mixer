@@ -6,8 +6,8 @@ from adafruit_tcs34725 import TCS34725
 
 i2c = busio.I2C(board.SCL, board.SDA)
 sensor = TCS34725(i2c)
-sensor.gain = 4
-sensor.integration_time = 50
+sensor.gain = 60
+sensor.integration_time = 100
 
 # ——— LED設定 ———
 LED_PIN = 17  # BCM17

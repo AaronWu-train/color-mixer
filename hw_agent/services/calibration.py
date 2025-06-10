@@ -3,7 +3,7 @@ from typing import Sequence, Union
 
 # ——— 校正參考值 ———
 BLACK_REF = np.array([0, 0, 0, 0], dtype=float)
-WHITE_REF = np.array([22781, 30428, 27548, 41984], dtype=float)
+WHITE_REF = np.array([29956,41068,37633,41984], dtype=float)
 
 # 定義一個通用的型別別名
 ArrayLikeF = Union[Sequence[float], np.ndarray]
