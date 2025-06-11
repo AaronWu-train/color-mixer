@@ -45,7 +45,7 @@ def remove_clear_channel(rgbc: ArrayLikeF) -> np.ndarray:
         raise ValueError(f"rgbc 形狀應為 (4,) ，但收到 {arr.shape}")
     r, g, b, c = arr
     r_c = r / c * 255 / 1.8 if c != 0 else 0
-    g_c = g / c * 255 / 2  if c != 0 else 0
+    g_c = g / c * 255 / 2 if c != 0 else 0
     b_c = b / c * 255 / 2 if c != 0 else 0
     new_arr = np.array([r_c, g_c, b_c])
     new_arr = np.clip(new_arr, 0, 255)  # 確保值在 0–255 範圍內
@@ -69,6 +69,7 @@ def calibrate_rgb(raw_rgb: ArrayLikeF) -> np.ndarray:
             [133, 165, 119],  # green
             [130, 94, 212],  # purple
             [255, 105, 89],  # orange
+            [64, 98, 220],  # new purple
         ],
         dtype=float,
     )
@@ -80,6 +81,7 @@ def calibrate_rgb(raw_rgb: ArrayLikeF) -> np.ndarray:
             [60, 160, 65],
             [125, 75, 205],  # purple
             [237, 128, 60],
+            [80, 40, 200],
         ],
         dtype=float,
     )

@@ -46,7 +46,7 @@
             <template #header>
               <div class="card-header">
                 <span>Sensor Color</span>
-                <el-button size="default" @click="toggleSensor" :disabled="mixingActive">
+                <el-button size="default" @click="toggleSensor">
                   {{ sensorActive ? '停止' : '啟動' }}
                 </el-button>
               </div>
@@ -236,6 +236,7 @@ const toggleMix = () => {
 
 // 開始混色流程
 const startMix = async () => {
+  toggleSensor()
   await axios
     .post('/mix', {
       target: rgbStrToArray(targetColor.value),

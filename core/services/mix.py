@@ -100,14 +100,19 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
             coeffs_rem = get_ratio(palette_latent, delta_latent)
             props_rem = coeffs_rem / np.sum(coeffs_rem)
             print(f"Remaining proportions: {props_rem}")
-            deltas = np.round(props_rem * BATCH_VOLUME).astype(int)
+            deltas = np.round(props_rem * BATCH_VOLUME, decimals=3)
 
             batch_recipe = [
-                {"id": color["id"], "name": color["name"], "volume": int(vol)}
+                {"id": color["id"], "name": color["name"], "volume": float(vol)}
                 for color, vol in zip(palette, deltas)
                 if vol > 0
             ]
             print(f"Batch recipe: {batch_recipe}")
+            await _set_state(
+                app,
+                "running",
+                f"Mixing batch: {batch_recipe} (total volume: {total_volume + int(np.sum(deltas))} ml)",
+            )
 
             response = await hw_client.dose_color(batch_recipe)
             if response.get("state") != "accepted":
