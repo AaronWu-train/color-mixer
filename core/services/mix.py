@@ -10,7 +10,7 @@ from scipy.optimize import nnls
 START_VOLUME = 60
 MAX_VOLUME = 110
 BATCH_VOLUME = 5  # 每次迭代加料總量
-TOLERANCE = 1e-4  # 誤差容忍度
+TOLERANCE = 0.05  # 誤差容忍度
 
 
 def get_ratio(palette_latent: np.ndarray, target_latent: np.ndarray) -> np.ndarray:
@@ -93,6 +93,7 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
 
             current_latent = np.array(mixbox.rgb_to_latent(current_rgb))
             delta_latent = target_latent - current_latent
+            print(f"Delta latent vector: {delta_latent}", np.linalg.norm(delta_latent))
             if np.linalg.norm(delta_latent) < TOLERANCE:
                 print("Target color reached within tolerance.")
                 break
