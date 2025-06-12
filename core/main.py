@@ -23,6 +23,7 @@ from .models import (
 )
 
 from .services import hw_client, mix as mix_service
+from .services import gamma as gamma_service
 
 
 # --------------------------------------------------------------------------- #
@@ -104,6 +105,7 @@ async def status() -> StatusResponse:
 async def read_color() -> RGBColorArray:
     """Read RGB value from the color sensor (scaled 0 - 255)."""
     payload = await hw_client.get_color()
+    payload = gamma_service.gamma_correction(payload)
     if payload is None:
         raise HTTPException(
             status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,

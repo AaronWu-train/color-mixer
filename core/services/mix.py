@@ -10,7 +10,7 @@ from scipy.optimize import nnls
 START_VOLUME = 60
 MAX_VOLUME = 110
 BATCH_VOLUME = 5  # 每次迭代加料總量
-TOLERANCE = 0.05  # 誤差容忍度
+TOLERANCE = 0.03  # 誤差容忍度
 
 
 def get_ratio(palette_latent: np.ndarray, target_latent: np.ndarray) -> np.ndarray:
