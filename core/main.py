@@ -1,4 +1,4 @@
-"""FastAPI entry point for the Color Mixer core service."""
+"""FastAPI entry point for the Color Mixer core service."""
 
 from fastapi import (
     FastAPI,
