@@ -5,9 +5,9 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
     HTTPException,
-    status,
     BackgroundTasks,
 )
+from fastapi import status as http_status
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import random, datetime
@@ -106,7 +106,7 @@ async def read_color() -> RGBColorArray:
     payload = await hw_client.get_color()
     if payload is None:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Color sensor not available.",
         )
 
@@ -155,7 +155,7 @@ async def mix(req: MixRequest) -> StatusResponse:
     """Start a color mixing session."""
     if app.state.current_mix_task and not app.state.current_mix_task.done():
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=http_status.HTTP_409_CONFLICT,
             detail="A mixing session is already in progress.",
         )
 
@@ -181,7 +181,7 @@ async def reset() -> MessageResponse:
 
     if not app.state.current_mix_task or app.state.current_mix_task.done():
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=http_status.HTTP_409_CONFLICT,
             detail="No mixing session is currently in progress.",
         )
 

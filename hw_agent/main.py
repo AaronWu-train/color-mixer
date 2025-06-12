@@ -3,8 +3,9 @@
 from fastapi import (
     FastAPI,
     HTTPException,
-    status,
 )
+
+from fastapi import status as http_status
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import random, datetime
@@ -121,7 +122,7 @@ async def dose(req: DoseRequest) -> StatusResponse:
     """Start a pump dosing session."""
     if app.state.current_dose_task and not app.state.current_dose_task.done():
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=http_status.HTTP_409_CONFLICT,
             detail="A dosing session is already in progress.",
         )
 
@@ -133,7 +134,11 @@ async def dose(req: DoseRequest) -> StatusResponse:
             dose_service.start_dose(app, req.root)
         )
     timestamp = datetime.datetime.now().isoformat()
-    return {"state": State.accepted, "message": "Dose request received.", "timestamp": timestamp}
+    return {
+        "state": State.accepted,
+        "message": "Dose request received.",
+        "timestamp": timestamp,
+    }
 
 
 @app.post("/stop", response_model=MessageResponse, tags=["pump"])
@@ -141,7 +146,7 @@ async def stop() -> MessageResponse:
     """Immediately stop all pumps and reset the agent."""
     if not app.state.current_dose_task or app.state.current_dose_task.done():
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
+            status_code=http_status.HTTP_409_CONFLICT,
             detail="No dosing session is currently in progress.",
         )
 
