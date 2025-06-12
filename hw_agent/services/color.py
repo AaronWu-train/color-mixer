@@ -13,6 +13,7 @@ async def getColor():
     clear_removed = remove_clear_channel(normalized)  # 0-255
     rgb_calibrated = calibrate_rgb(clear_removed)  # 0-255
     gammaed = gamma_correction(rgb_calibrated)  # 0-255
-    r, g, b = np.clip(clear_removed, 0, 255)
+    #r, g, b = np.clip(clear_removed, 0, 255)
+    r, g, b = np.clip(rgb_calibrated, 0, 255)
 
     return (round(r), round(g), round(b))
