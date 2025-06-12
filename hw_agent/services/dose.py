@@ -60,6 +60,7 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
         await pump_driver.haltPumpAll()
 
     finally:
+        await pump_driver.haltPumpAll()
         print("Dosing session finished, resetting state")
         await asyncio.sleep(3)  # Hold finished state for 3 seconds
 
