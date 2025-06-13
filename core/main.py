@@ -51,3 +51,5 @@ async def ws_mix(ws: WebSocket, session: str):
         await ws.send_json(WSMixProgress(pct=pct).dict())
         await asyncio.sleep(0.2)
     await ws.send_json(WSMixFinished(deltaE=1.23, final_rgb=[128,128,128]).dict())
+
+    
