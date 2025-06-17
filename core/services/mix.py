@@ -139,6 +139,18 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
             total_volume += added
             await asyncio.sleep(0.5)
 
+        while True:
+            status = await hw_client.get_status()
+            if status.get("state") == "idle":
+                break
+            await _set_state(
+                app,
+                "running",
+                f"Waiting for pumps to finish, current state: {status.get('state')}",
+            )
+            # print(f"Waiting for pumps to finish, current state: {status.get('state')}")
+            await asyncio.sleep(0.1)
+
         await _set_state(app, "finished", "Mixing completed successfully")
 
     except asyncio.CancelledError:
