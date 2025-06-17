@@ -88,8 +88,8 @@ def calibrate_rgb(raw_rgb: ArrayLikeF) -> np.ndarray:
             [220, 53, 99],  # magenta
             [201, 161, 62],  # yellow
             [38, 95, 182],  # cerulean blue
-            [73, 146, 86],  # green
-            [81, 80, 156],  # purple
+            [74, 150, 83],  # green
+            [83, 77, 160],  # purple
             [210, 87, 50],  # orange
         ],
         dtype=float,
@@ -99,8 +99,8 @@ def calibrate_rgb(raw_rgb: ArrayLikeF) -> np.ndarray:
             [204, 30, 120],  # magenta
             [252, 230, 60],  # yellow
             [30, 110, 180],  # cerulean blue
-            [60, 150, 80],  # green
-            [105, 60, 150],  # purple
+            [30, 154, 23],  # green
+            [110, 40, 175],  # purple
             [235, 168, 50],  # orange
         ],
         dtype=float,

@@ -9,8 +9,8 @@ from scipy.optimize import nnls
 # 初始與最大總體積設定 (ml)
 START_VOLUME = 60
 MAX_VOLUME = 110
-BATCH_VOLUME = 50  # 每次迭代加料總量
-TOLERANCE = 0.05  # 誤差容忍度
+BATCH_VOLUME = 10  # 每次迭代加料總量
+TOLERANCE = 0.03  # 誤差容忍度
 
 
 def get_ratio(palette_latent: np.ndarray, target_latent: np.ndarray) -> np.ndarray:
@@ -109,6 +109,11 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
             batch_volume = BATCH_VOLUME
             if props_rem[-1] != 0:
                 batch_volume = min(BATCH_VOLUME, total_volume / props_rem[-1])
+                print(
+                    f"Adjusting batch volume to {batch_volume} ml based on current color"
+                )
+
+            batch_volume = min(batch_volume, MAX_VOLUME - total_volume)
             deltas = np.round(props_rem[:-1] * batch_volume, decimals=3)
 
             batch_recipe = [
