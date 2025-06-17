@@ -9,7 +9,7 @@ from scipy.optimize import nnls
 # 初始與最大總體積設定 (ml)
 START_VOLUME = 60
 MAX_VOLUME = 110
-BATCH_VOLUME = 5  # 每次迭代加料總量
+BATCH_VOLUME = 50  # 每次迭代加料總量
 TOLERANCE = 0.05  # 誤差容忍度
 
 
@@ -98,10 +98,18 @@ async def start_mix(app: FastAPI, target_rgb: list[int]) -> None:
                 print("Target color reached within tolerance.")
                 break
 
-            coeffs_rem = get_ratio(palette_latent, delta_latent)
+            cur_palette_latent = np.hstack(
+                [palette_latent, current_latent[:, np.newaxis]]
+            )
+
+            coeffs_rem = get_ratio(cur_palette_latent, delta_latent)
             props_rem = coeffs_rem / np.sum(coeffs_rem)
             print(f"Remaining proportions: {props_rem}")
-            deltas = np.round(props_rem * BATCH_VOLUME, decimals=3)
+
+            batch_volume = BATCH_VOLUME
+            if props_rem[-1] != 0:
+                batch_volume = min(BATCH_VOLUME, total_volume / props_rem[-1])
+            deltas = np.round(props_rem[:-1] * batch_volume, decimals=3)
 
             batch_recipe = [
                 {"id": color["id"], "name": color["name"], "volume": float(vol)}
