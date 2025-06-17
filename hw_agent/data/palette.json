@@ -1,7 +1,7 @@
 [
   { "id": 1, "name": "white", "rgb": [255, 255, 255] },
-  { "id": 5, "name": "magenta", "rgb": [202, 20, 123] },
-  { "id": 2, "name": "cerulean blue", "rgb": [0, 134, 210] },
-  { "id": 6, "name": "yellow", "rgb": [240, 220, 0] },
+  { "id": 5, "name": "magenta", "rgb": [204, 30, 120] },
+  { "id": 2, "name": "cerulean blue", "rgb": [30, 110, 180] },
+  { "id": 6, "name": "yellow", "rgb": [252, 230, 60] },
   { "id": 4, "name": "black", "rgb": [0, 0, 0] }
 ]
