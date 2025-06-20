@@ -9,7 +9,7 @@ from scipy.optimize import nnls
 # 初始與最大總體積設定 (ml)
 START_VOLUME = 60
 MAX_VOLUME = 110
-BATCH_VOLUME = 10  # 每次迭代加料總量
+BATCH_VOLUME = 5  # 每次迭代加料總量
 TOLERANCE = 0.03  # 誤差容忍度
 
 
