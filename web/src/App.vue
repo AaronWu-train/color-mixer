@@ -11,79 +11,94 @@
         active-text-color="#409EFF"
       >
         <el-menu-item index="home">Color Mixer</el-menu-item>
+        <el-menu-item index="manual">Manual Control</el-menu-item>
       </el-menu>
     </el-header>
 
     <!-- 主要內容 -->
     <el-main class="main-content">
-      <!-- Server Status 卡片 -->
-      <el-card class="status-card">
-        <el-row class="status-header" type="flex" justify="center" align="middle">
+      <template v-if="activeMenu === 'home'">
+        <!-- Server Status 卡片 -->
+        <el-card class="status-card">
+          <el-row class="status-header" type="flex" justify="center" align="middle">
+            <el-col :span="6">
+              <span class="status-title">Server Status:</span>
+            </el-col>
+            <el-col :span="16">
+              <el-tag :type="tagType">{{ statusState }}</el-tag>
+            </el-col>
+            <el-col :span="2">
+              <el-button size="default" circle @click="fetchStatus">
+                <el-icon><Refresh /></el-icon>
+              </el-button>
+            </el-col>
+          </el-row>
+          <el-row type="flex" justify="center" align="middle">
+            <el-input v-model="statusMessage" readonly placeholder="狀態訊息" style="width: 100%" />
+          </el-row>
+          <el-row type="flex" justify="center" align="middle" style="margin-top: 5px">
+            <el-text class="mx-1" size="small" type="info"
+              >Timestamp: {{ statusTimestamp }}</el-text
+            >
+          </el-row>
+        </el-card>
+
+        <el-row type="flex" justify="center" align="middle" :gutter="30">
+          <!-- Sensor Color 卡片 -->
           <el-col :span="6">
-            <span class="status-title">Server Status:</span>
+            <el-card class="card">
+              <template #header>
+                <div class="card-header">
+                  <span>Sensor Color</span>
+                  <el-button size="default" @click="toggleSensor">
+                    {{ sensorActive ? '停止' : '啟動' }}
+                  </el-button>
+                </div>
+              </template>
+              <div class="color-block" :style="{ backgroundColor: sensorColor }"></div>
+            </el-card>
           </el-col>
-          <el-col :span="16">
-            <el-tag :type="tagType">{{ statusState }}</el-tag>
-          </el-col>
-          <el-col :span="2">
-            <el-button size="default" circle @click="fetchStatus">
-              <el-icon><Refresh /></el-icon>
+
+          <!-- 套用按鈕 -->
+          <el-col :span="1" class="arrow-col">
+            <el-button circle @click="applyColor" :disabled="mixingActive">
+              <el-icon><ArrowRight /></el-icon>
             </el-button>
           </el-col>
+
+          <!-- Target Color 卡片 -->
+          <el-col :span="6">
+            <el-card class="card">
+              <template #header>
+                <div class="card-header">
+                  <span>Target Color</span>
+                  <el-button size="default" @click="resetTarget">重設</el-button>
+                </div>
+              </template>
+              <div class="color-block" :style="{ backgroundColor: targetColor }"></div>
+              <div class="picker-wrapper">
+                <el-color-picker v-model="targetColor" size="default" color-format="rgb" />
+              </div>
+            </el-card>
+          </el-col>
         </el-row>
+
+        <!-- 開始混色按鈕 -->
+        <el-row type="flex" justify="center" align="middle" class="mix-row" :gutter="20">
+          <el-button type="primary" size="large" @click="startMix"> 開始混色 </el-button>
+          <el-button type="warning" size="large" @click="stopMix"> 停止混色 </el-button>
+        </el-row>
+      </template>
+      <template v-else-if="activeMenu === 'manual'">
         <el-row type="flex" justify="center" align="middle">
-          <el-input v-model="statusMessage" readonly placeholder="狀態訊息" style="width: 100%" />
+          <el-col :span="12">
+            <el-card>
+              <h3>Manual Control Page</h3>
+              <p>This section is under development.</p>
+            </el-card>
+          </el-col>
         </el-row>
-        <el-row type="flex" justify="center" align="middle" style="margin-top: 5px">
-          <el-text class="mx-1" size="small" type="info">Timestamp: {{ statusTimestamp }}</el-text>
-        </el-row>
-      </el-card>
-
-      <el-row type="flex" justify="center" align="middle" :gutter="30">
-        <!-- Sensor Color 卡片 -->
-        <el-col :span="6">
-          <el-card class="card">
-            <template #header>
-              <div class="card-header">
-                <span>Sensor Color</span>
-                <el-button size="default" @click="toggleSensor">
-                  {{ sensorActive ? '停止' : '啟動' }}
-                </el-button>
-              </div>
-            </template>
-            <div class="color-block" :style="{ backgroundColor: sensorColor }"></div>
-          </el-card>
-        </el-col>
-
-        <!-- 套用按鈕 -->
-        <el-col :span="1" class="arrow-col">
-          <el-button circle @click="applyColor" :disabled="mixingActive">
-            <el-icon><ArrowRight /></el-icon>
-          </el-button>
-        </el-col>
-
-        <!-- Target Color 卡片 -->
-        <el-col :span="6">
-          <el-card class="card">
-            <template #header>
-              <div class="card-header">
-                <span>Target Color</span>
-                <el-button size="default" @click="resetTarget">重設</el-button>
-              </div>
-            </template>
-            <div class="color-block" :style="{ backgroundColor: targetColor }"></div>
-            <div class="picker-wrapper">
-              <el-color-picker v-model="targetColor" size="default" color-format="rgb" />
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-
-      <!-- 開始混色按鈕 -->
-      <el-row type="flex" justify="center" align="middle" class="mix-row" :gutter="20">
-        <el-button type="primary" size="large" @click="startMix"> 開始混色 </el-button>
-        <el-button type="warning" size="large" @click="stopMix"> 停止混色 </el-button>
-      </el-row>
+      </template>
     </el-main>
   </el-container>
 </template>
