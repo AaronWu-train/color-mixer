@@ -214,9 +214,13 @@ const startSensorWebsocket = () => {
 // --- 動作函式 ---
 // 切換感測器
 const toggleSensor = () => {
-  sensorActive.value
-    ? wsColor?.close() && (sensorActive.value = false)
-    : ((sensorActive.value = true), startSensorWebsocket())
+  if (sensorActive.value) {
+    wsColor?.close()
+    sensorActive.value = false
+  } else {
+    sensorActive.value = true
+    startSensorWebsocket()
+  }
 }
 
 // 將感測器顏色套用到目標
@@ -273,7 +277,7 @@ const stopMix = async () => {
       })
       mixingActive.value = false
     })
-    .err((err) => {
+    .catch((err) => {
       console.error('Error:', err)
       ElMessage({
         message: 'Error: ' + err,
