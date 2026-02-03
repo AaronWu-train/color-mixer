@@ -44,7 +44,7 @@ class PaintItem(BaseModel):
 
     id: int = Field(..., description="ID of the color, starting from 0.")
     name: str = Field(..., examples=["magenta"])
-    rgb: RGBColorArray = Field(..., description="sRGB color (0 – 255)")
+    rgb: RGBColorArray = Field(..., description="sRGB color (0 - 255)")
 
 
 # --------------------------------------------------------------------------- #
@@ -54,7 +54,7 @@ class MessageResponse(BaseModel):
     """Standard OK/NG envelope without additional payload."""
 
     ok: bool = Field(..., description="Indicates whether the call succeeded.")
-    message: str = Field(..., description="Human‑readable message.")
+    message: str = Field(..., description="Human-readable message.")
 
 
 class StatusResponse(BaseModel):

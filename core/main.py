@@ -20,6 +20,7 @@ from .models import (
     MessageResponse,
     StatusResponse,
     State,
+    DoseRequest,
 )
 
 from .services import hw_client, mix as mix_service
@@ -115,6 +116,13 @@ async def read_color() -> RGBColorArray:
     return payload
 
 
+@app.get("/palette", response_model=dict, tags=["sensor"])
+async def read_palette() -> dict:
+    """Read the color palette from the hardware agent."""
+    payload = await hw_client.get_palette()
+    return payload
+
+
 # --------------------------------------------------------------------------- #
 # WebSocket endpoints
 # --------------------------------------------------------------------------- #
@@ -173,6 +181,18 @@ async def mix(req: MixRequest) -> StatusResponse:
     return StatusResponse(
         state=State.accepted,
         message="Mix request accepted.",
+        timestamp=timestamp,
+    )
+
+
+@app.post("/dose", response_model=StatusResponse, status_code=202, tags=["mix"])
+async def dose(req: DoseRequest) -> StatusResponse:
+    """Maually dose colors according to the provided recipe."""
+    response = await hw_client.dose_color(req.root)
+    timestamp = datetime.datetime.now().isoformat()
+    return StatusResponse(
+        state=response.get("state", "error"),
+        message=response.get("message", "No message provided."),
         timestamp=timestamp,
     )
 

@@ -73,3 +73,23 @@ class MixRequest(BaseModel):
         None,
         description="Optional message to pass to the algorithm (for logging, etc.).",
     )
+
+
+class DoseItem(BaseModel):
+    """A single color‑volume pair for mixing."""
+
+    id: int = Field(..., description="ID of the color, starting from 0.")
+    name: str = Field(..., examples=["magenta"])
+    volume: float = Field(..., description="Amount of color to inject (mL).")
+
+
+class DoseRequest(
+    RootModel[
+        conlist(
+            DoseItem,
+            min_length=1,
+            max_length=6,
+        )
+    ]
+):
+    """List of colors to be mixed in one operation."""
