@@ -17,7 +17,7 @@
 
     <!-- 主要內容 -->
     <el-main class="main-content">
-      <template v-if="activeMenu === 'home'">
+      <div v-show="activeMenu === 'home'">
         <!-- Server Status 卡片 -->
         <el-card class="status-card">
           <el-row class="status-header" type="flex" justify="center" align="middle">
@@ -88,8 +88,8 @@
           <el-button type="primary" size="large" @click="startMix"> 開始混色 </el-button>
           <el-button type="warning" size="large" @click="stopMix"> 停止混色 </el-button>
         </el-row>
-      </template>
-      <template v-else-if="activeMenu === 'manual'">
+      </div>
+      <div v-show="activeMenu === 'manual'">
         <el-row type="flex" justify="center" align="middle">
           <el-col :span="12">
             <el-card>
@@ -98,7 +98,7 @@
             </el-card>
           </el-col>
         </el-row>
-      </template>
+      </div>
     </el-main>
   </el-container>
 </template>
