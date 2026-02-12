@@ -116,8 +116,8 @@ async def read_color() -> RGBColorArray:
     return payload
 
 
-@app.get("/palette", response_model=dict, tags=["sensor"])
-async def read_palette() -> dict:
+@app.get("/palette", response_model=list, tags=["sensor"])
+async def read_palette() -> list:
     """Read the color palette from the hardware agent."""
     payload = await hw_client.get_palette()
     return payload
@@ -185,18 +185,6 @@ async def mix(req: MixRequest) -> StatusResponse:
     )
 
 
-@app.post("/dose", response_model=StatusResponse, status_code=202, tags=["mix"])
-async def dose(req: DoseRequest) -> StatusResponse:
-    """Maually dose colors according to the provided recipe."""
-    response = await hw_client.dose_color(req.root)
-    timestamp = datetime.datetime.now().isoformat()
-    return StatusResponse(
-        state=response.get("state", "error"),
-        message=response.get("message", "No message provided."),
-        timestamp=timestamp,
-    )
-
-
 @app.post("/reset", response_model=MessageResponse, tags=["mix"])
 async def reset() -> MessageResponse:
     """Stop the current mixing session and reset state."""
@@ -215,3 +203,42 @@ async def reset() -> MessageResponse:
         pass
 
     return {"ok": True, "message": "Reset complete."}
+
+
+@app.post("/dose", response_model=StatusResponse, status_code=202, tags=["mix"])
+async def dose(req: DoseRequest) -> StatusResponse:
+    """Maually dose colors according to the provided recipe."""
+    if app.state.current_mix_task and not app.state.current_mix_task.done():
+        raise HTTPException(
+            status_code=http_status.HTTP_409_CONFLICT,
+            detail="A mixing session is currently in progress. Please wait until it finishes.",
+        )
+
+    payload = [x.model_dump() for x in req.root]
+    response = await hw_client.dose_color(payload)
+    timestamp = datetime.datetime.now().isoformat()
+    return StatusResponse(
+        state=response.get("state", "error"),
+        message=response.get("message", "No message provided."),
+        timestamp=timestamp,
+    )
+
+
+@app.post("/stop", response_model=MessageResponse, tags=["mix"])
+async def stop() -> MessageResponse:
+    """Immediately stop all pumps."""
+    if app.state.current_mix_task and not app.state.current_mix_task.done():
+        app.state.current_mix_task.cancel()
+        try:
+            await app.state.current_mix_task
+        except asyncio.CancelledError:
+            pass
+
+    response = await hw_client.halt_pumps()
+    print(response.get("message"))
+    if response.get("state") == "error":
+        raise HTTPException(
+            status_code=http_status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=response.get("message", "Failed to halt pumps."),
+        )
+    return {"ok": True, "message": "All pumps halted."}

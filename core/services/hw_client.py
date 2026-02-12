@@ -56,7 +56,7 @@ async def get_color() -> Optional[List[int]]:
         return None
 
 
-async def get_palette() -> Dict[str, List[Dict[str, Any]]]:
+async def get_palette() -> List[Dict[str, Any]]:
     """Fetch the color palette from the hardware agent."""
     client = await get_client()
     try:
@@ -65,7 +65,7 @@ async def get_palette() -> Dict[str, List[Dict[str, Any]]]:
         return response.json()
     except httpx.HTTPStatusError as e:
         print(f"Error fetching palette: {e.response.status_code} - {e.response.text}")
-        return {"palette": []}
+        return []
 
 
 async def dose_color(items: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -92,7 +92,12 @@ async def halt_pumps() -> Dict[str, Any]:
         return response.json()
     except httpx.HTTPStatusError as e:
         print(f"Error halting pumps: {e.response.status_code} - {e.response.text}")
-        return {"state": "error", "message": "Failed to halt pumps"}
+        print(e.response)
+
+        return {
+            "state": "error",
+            "message": f"Failed to halt pumps: {e.response.status_code} - {e.response.json().get('detail', '')}",
+        }
 
 
 if __name__ == "__main__":
