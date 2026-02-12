@@ -14,7 +14,7 @@
     </div>
 
     <div class="actions">
-      <el-button type="primary" :disabled="!color" @click="onUse"> 使用 </el-button>
+      <el-button type="primary" :disabled="!color" @click="onUse"> Dose 5 ml </el-button>
     </div>
   </el-card>
 </template>
