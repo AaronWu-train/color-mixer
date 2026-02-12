@@ -90,13 +90,9 @@
         </el-row>
       </div>
       <div v-show="activeMenu === 'manual'">
-        <el-row type="flex" justify="center" align="middle">
-          <el-col :span="12">
-            <el-card>
-              <h3>Manual Control Page</h3>
-              <p>This section is under development.</p>
-            </el-card>
-          </el-col>
+        <ColorCardGrid :colors="palette" @use="doseColor" />
+        <el-row type="flex" justify="center" align="middle" class="mix-row" :gutter="20">
+          <el-button type="danger" size="large" @click="stopDose"> 停止 </el-button>
         </el-row>
       </div>
     </el-main>
@@ -108,6 +104,7 @@ import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { Refresh, ArrowRight } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import ColorCardGrid from '@/components/ColorCardGrid.vue'
 
 // --- 狀態宣告 ---
 const WS_BASE = ref(import.meta.env.VITE_WS_BASE_URL)
@@ -119,6 +116,7 @@ const statusState = ref('idle')
 const statusMessage = ref('No additional message.')
 const statusTimestamp = ref('')
 const mixingActive = ref(false)
+const palette = ref([])
 
 // WebSocket 實例
 let wsColor = null
@@ -167,6 +165,24 @@ const fetchStatus = async () => {
     console.error('Error fetching status:', err)
     ElMessage({
       message: 'Error fetching status: ' + err,
+      type: 'error',
+    })
+  }
+}
+
+const fetchPalette = async () => {
+  try {
+    const res = await axios.get('/palette')
+    palette.value = res.data || []
+    ElMessage({
+      message: 'Palette fetched successfully!',
+      type: 'success',
+    })
+    console.log('Fetched palette:', palette.value)
+  } catch (err) {
+    console.error('Error fetching palette:', err)
+    ElMessage({
+      message: 'Error fetching palette: ' + err,
       type: 'error',
     })
   }
@@ -301,6 +317,53 @@ const stopMix = async () => {
     })
 }
 
+const stopDose = async () => {
+  await axios
+    .post('/stop')
+    .then(() => {
+      ElMessage({
+        message: 'Dosing stopped.',
+        type: 'info',
+      })
+      mixingActive.value = false
+    })
+    .catch((err) => {
+      console.error(err.response.data.detail || err)
+      ElMessage({
+        message: err.response.data.detail || err,
+        type: 'error',
+      })
+    })
+}
+
+const doseColor = async (color) => {
+  let id = color.id
+  let colorName = color.name
+  let volume = 10.0 // 預設劑量
+  const doseInfo = {
+    id,
+    name: colorName,
+    volume,
+  }
+  const payload = [doseInfo]
+
+  await axios
+    .post('/dose', payload)
+    .then(() => {
+      ElMessage({
+        message: `Dosing ${colorName}...`,
+        type: 'info',
+      })
+    })
+    .catch((err) => {
+      console.error('Error dosing color:', err)
+      ElMessage({
+        message: 'Error dosing color: ' + err,
+        type: 'error',
+      })
+    })
+}
+
 // 切換導覽列選項
 const handleMenuSelect = (index) => {
   activeMenu.value = index
@@ -310,6 +373,7 @@ const handleMenuSelect = (index) => {
 onMounted(() => {
   // 初次載入時可啟動狀態檢查
   fetchStatus()
+  fetchPalette()
   startStatusWebsocket()
 })
 </script>
