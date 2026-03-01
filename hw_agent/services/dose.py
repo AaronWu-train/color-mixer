@@ -37,7 +37,7 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
             app.state.timestamp = datetime.datetime.now().isoformat()
 
     except asyncio.CancelledError:
-        print("Dosing session was cancelled")
+        print("Cancelling dosing session...")
         async with app.state.status_lock:
             app.state.status_state = "cancelling"
             app.state.status_message = "Dosing session is cancelling"
@@ -49,7 +49,7 @@ async def start_dose(app: FastAPI, recipe: list[DoseItem]) -> None:
 
         await asyncio.gather(*tasks, return_exceptions=True)
         await pump_driver.haltPumpAll()
-        print("所有 pump 任務已取消")
+        print("All Dosing tasks were cancelled")
 
     except Exception as e:
         print(str(e))
