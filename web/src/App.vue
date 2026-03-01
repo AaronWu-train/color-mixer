@@ -339,7 +339,7 @@ const stopDose = async () => {
 const doseColor = async (color) => {
   let id = color.id
   let colorName = color.name
-  let volume = 10.0 // 預設劑量
+  let volume = 5.0 // 預設劑量
   const doseInfo = {
     id,
     name: colorName,
