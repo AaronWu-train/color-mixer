@@ -97,25 +97,23 @@ pre-commit install
 
 ## 🛠 Common Commands
 
-| Goal                      | Command                                                                    |
-| ------------------------- | -------------------------------------------------------------------------- |
-| Drop into virtual-env     | `eval "$(poetry env activate)"`                                            |
-| Run core API server       | `poetry run uvicorn core.main:app --reload --port 8000`                    |
-| Run hw_agent API          | `poetry run uvicorn hw_agent.main:app --reload --host 0.0.0.0 --port 9000` |
-| Run Web UI                | `cd web` and follow instructions in `README.md` in the `web/` folder       |
-| Sync dependency           | `poetry install`                                                           |
-| Add a runtime dependency  | `poetry add mixbox`                                                        |
-| Add a dev-only dependency | `poetry add --group dev pytest`                                            |
+| Goal                  | Command                                                                    |
+| --------------------- | -------------------------------------------------------------------------- |
+| Drop into virtual-env | `eval "$(poetry env activate)"`                                            |
+| Run core API server   | `poetry run uvicorn core.main:app --reload --port 8000`                    |
+| Run hw_agent API      | `poetry run uvicorn hw_agent.main:app --reload --host 0.0.0.0 --port 9000` |
+| Run Web UI            | `cd web` and follow instructions in `README.md` in the `web/` folder       |
+
+### Other Commands
+
+| Goal                      | Command                         |
+| ------------------------- | ------------------------------- |
+| Sync dependency           | `poetry install`                |
+| Add a runtime dependency  | `poetry add mixbox`             |
+| Add a dev-only dependency | `poetry add --group dev pytest` |
 
 ---
 
 ## 📜 License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
-
----
-
-## 🧭 Roadmap
-
-- [ ] Something to be done
-- [ ] Otherthings to be done
