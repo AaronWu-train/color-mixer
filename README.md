@@ -4,6 +4,12 @@
 
 A lightweight **color-mixing toolkit** that combines a web UI, a REST/WebSocket backend (FastAPI), raspberry PI, and a scriptable Mixbox-based algorithm.
 
+<img src="./assets/image2.jpg" alt="Rainbow" style="width: 100%;">
+<img src="./assets/image3.jpg" alt="case1" style="width: 33%;">
+<img src="./assets/image4.jpg" alt="case2" style="width: 33%;">
+<img src="./assets/image5.jpg" alt="case3" style="width: 32%;">
+<img src="./assets/image1.jpg" alt="All Members" style="width: 100%;">
+
 ---
 
 ## ✨ Features
